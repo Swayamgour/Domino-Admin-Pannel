@@ -23,7 +23,7 @@ import {
   FaChartBar
 } from 'react-icons/fa'
 import { IoExitOutline } from 'react-icons/io5'
-import { useGetCurrentUserQuery } from '../redux/api'
+import { useGetCurrentUserQuery, useLogoutMutation } from '../redux/api'
 
 export default function AnchorTemporaryDrawer () {
   const [open, setOpen] = React.useState(false)
@@ -31,6 +31,7 @@ export default function AnchorTemporaryDrawer () {
   const navigate = useNavigate()
 
   const { data: CurrentUser } = useGetCurrentUserQuery()
+  const [logout, result] = useLogoutMutation()
 
   const toggleDrawer = open => event => {
     if (
@@ -42,24 +43,24 @@ export default function AnchorTemporaryDrawer () {
     setOpen(open)
   }
 
+  const handelLogOut = async () => {
+    await logout()
+  }
+
   const NavItem = ({ to, icon: Icon, label }) => (
     <NavLink
       to={to}
       className={({ isActive }) =>
         `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
           isActive
-            ? 'bg-indigo-600 shadow-lg shadow-indigo-500/20 text-white'
+            ? 'bg-gradient-to-r from-purple-600 to-indigo-700 shadow-lg shadow-indigo-500/20 text-white'
             : 'hover:bg-gray-700 text-gray-300'
         }`
       }
     >
       {({ isActive }) => (
         <>
-          <div
-            className={`p-2 rounded-lg ${
-              isActive ? 'bg-indigo-700' : 'bg-gray-700'
-            }`}
-          >
+          <div className={`p-2 rounded-lg ${isActive ? '' : 'bg-gray-700'}`}>
             <Icon className='text-lg' />
           </div>
           {label}
@@ -108,7 +109,10 @@ export default function AnchorTemporaryDrawer () {
 
         {/* Footer with Logout */}
         <div className='mt-auto pt-5 border-t border-gray-700'>
-          <div onClick={()=>navigate('/ProfilePage')} className='flex items-center gap-3 p-3 bg-gray-800 rounded-xl mb-4'>
+          <div
+            onClick={() => navigate('/ProfilePage')}
+            className='flex items-center gap-3 p-3 bg-gray-800 rounded-xl mb-4'
+          >
             <div className='bg-gradient-to-br from-indigo-500 to-purple-600 w-10 h-10 rounded-full flex items-center justify-center'>
               <span className='font-bold'>AK</span>
             </div>
@@ -118,29 +122,15 @@ export default function AnchorTemporaryDrawer () {
             </div>
           </div>
 
-          <NavLink
-            to='/'
-            className={({ isActive }) =>
-              `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-red-600 text-white'
-                  : 'hover:bg-gray-700 text-gray-300'
-              }`
-            }
+          <div
+            className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200`}
+            onClick={() => handelLogOut()}
           >
-            {({ isActive }) => (
-              <>
-                <div
-                  className={`p-2 rounded-lg ${
-                    isActive ? 'bg-red-700' : 'bg-gray-700'
-                  }`}
-                >
-                  <IoExitOutline className='text-lg' />
-                </div>
-                Logout
-              </>
-            )}
-          </NavLink>
+            <div className={`p-2 rounded-lg `}>
+              <IoExitOutline className='text-lg' />
+            </div>
+            Logout
+          </div>
         </div>
       </div>
     </Box>

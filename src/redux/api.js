@@ -26,13 +26,21 @@ export const pokemonApi = createApi({
       providesTags: (result, error, id) => [{ type: 'Admin', id }]
     }),
     getCurrentUser: build.query({
-      query: id => `v1/users/getcurrentuser`,
+      query: id => `v1/users/getcurrentuserdetails`,
       providesTags: id => [{ type: 'Admin', id }]
     }),
 
     AllLogin: build.mutation({
       query: newAdmin => ({
         url: 'v1/users/login',
+        method: 'POST',
+        body: newAdmin
+      }),
+      invalidatesTags: ['Admin']
+    }),
+    logout: build.mutation({
+      query: newAdmin => ({
+        url: 'v1/users/logout',
         method: 'POST',
         body: newAdmin
       }),
@@ -113,7 +121,15 @@ export const pokemonApi = createApi({
         body: newAdmin
       }),
       invalidatesTags: ['Category']
-    })
+    }),
+     updatePassword: build.mutation({
+      query: ({ id, ...data }) => ({
+        url: `v1/users/update-password`,
+        method: 'PATCH',
+        body: data
+      }),
+      invalidatesTags:  [ 'Admin' ]
+    }),
   })
 })
 
@@ -131,5 +147,7 @@ export const {
   useCreateCategoryMutation,
   useGetAllProductQuery,
   useDeleteProductMutation,
-  useUpdateProductMutation
+  useUpdateProductMutation,
+  useLogoutMutation,
+  useUpdatePasswordMutation
 } = pokemonApi

@@ -7,9 +7,21 @@ import {
   useUpdateProductMutation
 } from '../redux/api'
 import AddCategoryDialog from '../component/AddCategory'
+import { HiOutlineEmojiHappy } from 'react-icons/hi'
+// import { HiOutlineEmojiHappy } from 'react-icons/hi';
+import { HiX } from 'react-icons/hi';
+// import { HiX } from 'react-icons/hi'; // Heroicons (solid/outline)
+
+
+
+
 // import toast from 'react-hot-toast';
 import { toast } from 'react-hot-toast'
 // import 'react-toastify/dist/ReactToastify.css';
+import { HiOutlineMenu } from 'react-icons/hi'
+import { HiOutlineSearch } from 'react-icons/hi'
+
+
 
 const ProductManagement = () => {
   // Mock data for products
@@ -262,9 +274,7 @@ const ProductManagement = () => {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-3 md:p-6'>
-      {/* <Toaster /> */}
-
-      {/* Add Category Dialo box */}
+     
 
       <AddCategoryDialog
         isOpen={isDialogOpen}
@@ -287,20 +297,8 @@ const ProductManagement = () => {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className='p-2 rounded-lg bg-indigo-600 text-white'
           >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='h-5 w-5'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M4 6h16M4 12h16M4 18h16'
-              />
-            </svg>
+            <HiOutlineMenu size={24} />
+
           </button>
         </div>
 
@@ -419,20 +417,7 @@ const ProductManagement = () => {
                   onChange={e => setSearchTerm(e.target.value)}
                   className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 />
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  className='h-4 w-4 md:h-5 md:w-5 absolute right-3 top-2.5 md:top-3.5 text-gray-400'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-                  />
-                </svg>
+               <HiOutlineSearch  size={24} />
               </div>
             </div>
 
@@ -571,20 +556,8 @@ const ProductManagement = () => {
 
           {filteredProducts.length === 0 && (
             <div className='text-center py-8 bg-white rounded-xl shadow'>
-              <svg
-                xmlns='http://www.w3.org/2000/svg'
-                className='h-16 w-16 mx-auto text-gray-400'
-                fill='none'
-                viewBox='0 0 24 24'
-                stroke='currentColor'
-              >
-                <path
-                  strokeLinecap='round'
-                  strokeLinejoin='round'
-                  strokeWidth={2}
-                  d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                />
-              </svg>
+             <HiOutlineEmojiHappy className="h-16 w-16 mx-auto text-gray-400" />
+
               <h3 className='mt-4 text-lg font-medium text-gray-900'>
                 No products found
               </h3>
@@ -702,20 +675,8 @@ const ProductManagement = () => {
 
             {filteredProducts.length === 0 && (
               <div className='text-center py-12'>
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  className='h-16 w-16 mx-auto text-gray-400'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                  />
-                </svg>
+               <HiOutlineEmojiHappy className="h-16 w-16 mx-auto text-gray-400" />
+
                 <h3 className='mt-4 text-lg font-medium text-gray-900'>
                   No products found
                 </h3>
@@ -763,20 +724,8 @@ const ProductManagement = () => {
                   onClick={() => removeCategory(category)}
                   className='ml-1 md:ml-2 text-purple-500 hover:text-purple-700'
                 >
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-3 w-3 md:h-4 md:w-4'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M6 18L18 6M6 6l12 12'
-                    />
-                  </svg>
+                 <HiX className="h-3 w-3 md:h-4 md:w-4" />
+
                 </button>
               </div>
             ))}
@@ -797,20 +746,8 @@ const ProductManagement = () => {
                   onClick={() => setIsFormOpen(false)}
                   className='text-gray-500 hover:text-gray-700'
                 >
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-6 w-6'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M6 18L18 6M6 6l12 12'
-                    />
-                  </svg>
+                 <HiX className="h-6 w-6" />
+
                 </button>
               </div>
 

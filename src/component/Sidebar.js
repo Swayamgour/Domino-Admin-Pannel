@@ -76,7 +76,10 @@ const Sidebar = () => {
 
       {/* Footer with Logout */}
       <div className='mt-auto pt-5 border-t border-gray-700'>
-        <div onClick={()=>navigate('/ProfilePage')} className='flex items-center gap-3 p-3 bg-gray-800 rounded-xl mb-4'>
+        <div
+          onClick={() => navigate('/ProfilePage')}
+          className='flex items-center gap-3 p-3 bg-gray-800 rounded-xl mb-4'
+        >
           <div className='bg-gradient-to-br from-indigo-500 to-purple-600 w-10 h-10 rounded-full flex items-center justify-center'>
             <span className='font-bold'>AK</span>
           </div>
@@ -90,8 +93,7 @@ const Sidebar = () => {
           </div>
         </div>
 
-        <NavLink
-          to='/'
+        <div
           className={({ isActive }) =>
             `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
               isActive
@@ -100,19 +102,11 @@ const Sidebar = () => {
             }`
           }
         >
-          {({ isActive }) => (
-            <>
-              <div
-                className={`p-2 rounded-lg ${
-                  isActive ? 'bg-red-700' : 'bg-gray-700'
-                }`}
-              >
-                <IoExitOutline className='text-lg' />
-              </div>
-              Logout
-            </>
-          )}
-        </NavLink>
+          <div className={`p-2 rounded-lg `}>
+            <IoExitOutline className='text-lg' />
+          </div>
+          Logout
+        </div>
       </div>
     </div>
   )

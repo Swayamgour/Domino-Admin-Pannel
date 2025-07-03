@@ -1,367 +1,345 @@
 import React, { useState } from 'react'
 import { useGetCurrentUserQuery } from '../redux/api'
+import {
+  HiCamera,
+  HiLocationMarker,
+  HiLockClosed,
+  HiOutlinePencil,
+  HiOutlineMail,
+  HiOutlinePhone,
+  HiOutlineGlobe,
+  HiOutlineCalendar,
+  HiOutlineKey
+} from 'react-icons/hi'
+// import { BsCrosshair2 } from 'react-icons/bs'
+import { RxCross2 } from 'react-icons/rx'
+import ChangePassword from '../component/ChangePassword'
+import ProfileEdit from '../component/ProfileEdit'
 
 const ProfilePage = () => {
-  // User data from API response
-
   const { data: userData } = useGetCurrentUserQuery()
-
   const [isEditing, setIsEditing] = useState(false)
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+
   const [profileData, setProfileData] = useState({
-    ...userData.message,
-    profileImage: '/profile-placeholder.jpg'
+    ...userData?.message,
+    profileImage:
+      'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'
   })
 
-  // Format date for display
+  // Password update state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [passwordError, setPasswordError] = useState('')
+  const [passwordSuccess, setPasswordSuccess] = useState('')
+
   const formatDate = dateString => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' }
     return new Date(dateString).toLocaleDateString(undefined, options)
   }
 
-  // Handle input changes for editing
   const handleInputChange = e => {
     const { name, value } = e.target
-    setProfileData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setProfileData(prev => ({ ...prev, [name]: value }))
   }
 
-  // Handle form submission
+  const handlePasswordChange = e => {
+    const { name, value } = e.target
+    setPasswordData(prev => ({ ...prev, [name]: value }))
+    if (passwordError) setPasswordError('')
+  }
+
   const handleSubmit = e => {
     e.preventDefault()
     setIsEditing(false)
     console.log('Updated profile:', profileData)
   }
 
+  const handlePasswordSubmit = e => {
+    e.preventDefault()
+
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      setPasswordError('All fields are required')
+      return
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New passwords don't match")
+      return
+    }
+
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters')
+      return
+    }
+
+    console.log('Password update data:', {
+      currentPassword: passwordData.currentPassword,
+      newPassword: passwordData.newPassword
+    })
+
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: ''
+    })
+    setPasswordError('')
+    setPasswordSuccess('Password updated successfully!')
+
+    setTimeout(() => setPasswordSuccess(''), 3000)
+  }
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6'>
-      <div className='max-w-4xl mx-auto'>
+      <div className='max-w-6xl mx-auto'>
         {/* Header */}
-        <div className='text-center mb-8'>
+        <div className='text-center mb-10'>
           <h1 className='text-3xl md:text-4xl font-bold text-gray-800 mb-2'>
             Business Profile
           </h1>
-          <p className='text-gray-600'>Manage your account information</p>
+          <p className='text-gray-600 max-w-md mx-auto'>
+            Manage your account information and settings
+          </p>
         </div>
 
-        {/* Profile Card */}
-        <div className='bg-white rounded-2xl shadow-xl overflow-hidden mb-8'>
-          <div className='relative'>
-            {/* Banner */}
-            <div className='h-32 bg-gray-800'></div>
+        <div className='flex flex-col lg:flex-row gap-6'>
+          {/* Profile Card (Left Sidebar) */}
+          <div className='lg:w-1/3'>
+            <div className='bg-white rounded-2xl shadow-lg overflow-hidden'>
+              <div className='relative'>
+                {/* Banner */}
+                <div className='h-32 bg-gradient-to-r from-blue-500 to-indigo-600'></div>
 
-            {/* Profile Section */}
-            <div className='px-6 pb-6'>
-              <div className='flex flex-col md:flex-row items-center md:items-end -mt-16'>
-                {/* Profile Image */}
-                <div className='relative'>
-                    
-                  <img
-                    src={'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'}
-                    alt='Profile'
-                    className='w-32 h-32 rounded-full border-4 border-white shadow-lg bg-gray-200'
-                  />
-                  <button
-                    className='absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors'
-                    onClick={() => document.getElementById('fileInput').click()}
-                  >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-5 w-5 text-gray-700'
-                      viewBox='0 0 20 20'
-                      fill='currentColor'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z'
-                        clipRule='evenodd'
+                {/* Profile Content */}
+                <div className='px-6 pb-8 -mt-16'>
+                  <div className='flex justify-center'>
+                    <div className='relative group'>
+                      <img
+                        src={profileData.profileImage}
+                        alt='Profile'
+                        className='w-32 h-32 rounded-full border-4 border-white shadow-xl bg-gray-200 object-cover'
                       />
-                    </svg>
-                  </button>
+                      <div className='absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
+                        <button
+                          onClick={() =>
+                            document.getElementById('fileInput').click()
+                          }
+                          className='p-2 bg-white rounded-full'
+                        >
+                          <HiCamera className='h-6 w-6 text-gray-800' />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
                   <input
                     type='file'
                     id='fileInput'
                     className='hidden'
                     accept='image/*'
                   />
-                </div>
 
-                {/* Profile Info */}
-                <div className='mt-4 md:mt-0 md:ml-6 text-center md:text-left'>
-                  <div className='flex flex-col md:flex-row md:items-center'>
-                    <h2 className='text-2xl font-bold text-gray-800'>
-                      {profileData.frenchieName}
-                    </h2>
-                    <div className='mt-1 md:mt-0 md:ml-4'>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          profileData.status === 'Approved'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
+                  <div className='text-center mt-4'>
+                    <div className='flex flex-col items-center'>
+                      <h2 className='text-2xl font-bold text-gray-800'>
+                        {profileData.frenchieName}
+                      </h2>
+                      <div className='mt-2'>
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            profileData.status === 'Approved'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
+                          {profileData.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className='text-gray-600 mt-2 flex items-center justify-center'>
+                      <HiLocationMarker className='h-4 w-4 mr-1 text-indigo-500' />
+                      {profileData.city}, {profileData.state}
+                    </p>
+
+                    <p className='text-gray-500 text-sm mt-1'>
+                      ID: {profileData.frenchiesID}
+                    </p>
+
+                    <div className='mt-6 flex flex-col space-y-3'>
+                      <button
+                        onClick={() => setIsEditing(!isEditing)}
+                        className='px-4 py-2 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all'
                       >
-                        {profileData.status}
-                      </span>
+                        <HiOutlinePencil className='mr-2' />
+                        {isEditing ? 'Cancel Editing' : 'Edit Profile'}
+                      </button>
+
+                      <button
+                        onClick={() => setShowPasswordForm(!showPasswordForm)}
+                        className={`px-4 py-2 flex items-center justify-center rounded-lg border ${
+                          showPasswordForm
+                            ? 'border-gray-300 text-gray-800'
+                            : 'border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
+                        } transition-colors`}
+                      >
+                        <HiOutlineKey className='mr-2' />
+                        {showPasswordForm
+                          ? 'Cancel Password Change'
+                          : 'Change Password'}
+                      </button>
                     </div>
                   </div>
-                  <p className='text-gray-600 mt-1'>
-                    {profileData.frenchiesID}
-                  </p>
-                  <p className='text-gray-600 flex items-center justify-center md:justify-start mt-1'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-4 w-4 mr-1'
-                      viewBox='0 0 20 20'
-                      fill='currentColor'
-                    >
-                      <path
-                        fillRule='evenodd'
-                        d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z'
-                        clipRule='evenodd'
-                      />
-                    </svg>
-                    {profileData.city}, {profileData.state}
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className='px-6 py-4 border-t border-gray-100'>
+                <div className='grid grid-cols-3 gap-4'>
+                  <div className='text-center'>
+                    <p className='text-2xl font-bold text-indigo-600'>24</p>
+                    <p className='text-xs text-gray-500'>Projects</p>
+                  </div>
+                  <div className='text-center'>
+                    <p className='text-2xl font-bold text-indigo-600'>89%</p>
+                    <p className='text-xs text-gray-500'>Success</p>
+                  </div>
+                  <div className='text-center'>
+                    <p className='text-2xl font-bold text-indigo-600'>2.1k</p>
+                    <p className='text-xs text-gray-500'>Customers</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Info Card */}
+            <div className='bg-white rounded-2xl shadow-lg mt-6 p-6'>
+              <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center'>
+                <HiOutlineCalendar className='mr-2 text-indigo-500' />
+                Account Information
+              </h3>
+
+              <div className='space-y-3'>
+                <div>
+                  <p className='text-xs text-gray-500'>Account Created</p>
+                  <p className='text-sm font-medium text-gray-800'>
+                    {formatDate(profileData.createdAt)}
                   </p>
                 </div>
 
-                {/* Action Button */}
-                <div className='mt-4 md:mt-0 md:ml-auto'>
-                  <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    className='px-4 py-2 bg-gray-800 text-white rounded-lg '
-                  >
-                    {isEditing ? 'Cancel' : 'Edit Profile'}
-                  </button>
+                <div>
+                  <p className='text-xs text-gray-500'>Last Updated</p>
+                  <p className='text-sm font-medium text-gray-800'>
+                    {formatDate(profileData.updatedAt)}
+                  </p>
+                </div>
+
+                <div>
+                  <p className='text-xs text-gray-500'>Account Type</p>
+                  <p className='text-sm font-medium text-gray-800 capitalize'>
+                    {profileData.role}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Profile Information */}
-        <div className='bg-white rounded-2xl shadow-xl p-6 mb-8'>
-          <h3 className='text-xl font-bold text-gray-800 mb-6'>
-            Profile Information
-          </h3>
-
-          {isEditing ? (
-            <form onSubmit={handleSubmit}>
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Business Name
-                  </label>
-                  <input
-                    type='text'
-                    name='frenchieName'
-                    value={profileData.frenchieName}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Frenchies ID
-                  </label>
-                  <input
-                    type='text'
-                    name='frenchiesID'
-                    value={profileData.frenchiesID}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed'
-                    disabled
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Email
-                  </label>
-                  <input
-                    type='email'
-                    name='email'
-                    value={profileData.email}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Phone
-                  </label>
-                  <input
-                    type='text'
-                    name='phone'
-                    value={profileData.phone}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent'
-                  />
-                </div>
-
-                <div className='md:col-span-2'>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Address
-                  </label>
-                  <input
-                    type='text'
-                    name='address'
-                    value={profileData.address}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    City
-                  </label>
-                  <input
-                    type='text'
-                    name='city'
-                    value={profileData.city}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    State
-                  </label>
-                  <input
-                    type='text'
-                    name='state'
-                    value={profileData.state}
-                    onChange={handleInputChange}
-                    className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent'
-                  />
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Account Status
-                  </label>
-                  <div className='w-full p-3 bg-gray-100 rounded-lg'>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        profileData.status === 'Approved'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {profileData.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className='block text-gray-700 font-medium mb-2'>
-                    Account Type
-                  </label>
-                  <div className='w-full p-3 bg-gray-100 rounded-lg'>
-                    <span className='capitalize'>{profileData.role}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className='flex justify-end mt-8 space-x-4'>
-                <button
-                  type='button'
-                  onClick={() => setIsEditing(false)}
-                  className='px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50'
+          {/* Main Content Area */}
+          <div className='lg:w-2/3'>
+            {/* Profile Information Card */}
+            <div className='bg-white rounded-2xl shadow-lg p-6 mb-6'>
+              <div className='flex justify-between items-center mb-6'>
+                <h3 className='text-xl font-bold text-gray-800'>
+                  Profile Information
+                </h3>
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    profileData.status === 'Approved'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}
                 >
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  className='px-6 py-3  bg-gray-800 text-white font-medium rounded-lg '
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-              <div>
-                <p className='text-gray-500 text-sm'>Frenchies ID</p>
-                <p className='text-gray-800 font-medium'>
-                  {profileData.frenchiesID}
-                </p>
-              </div>
-
-              <div>
-                <p className='text-gray-500 text-sm'>Business Name</p>
-                <p className='text-gray-800 font-medium'>
-                  {profileData.frenchieName}
-                </p>
-              </div>
-
-              <div>
-                <p className='text-gray-500 text-sm'>Email Address</p>
-                <p className='text-gray-800 font-medium'>{profileData.email}</p>
-              </div>
-
-              <div>
-                <p className='text-gray-500 text-sm'>Phone Number</p>
-                <p className='text-gray-800 font-medium'>{profileData.phone}</p>
-              </div>
-
-              <div>
-                <p className='text-gray-500 text-sm'>Account Status</p>
-                <p className='text-gray-800 font-medium flex items-center'>
-                  <span
-                    className={`w-2 h-2 rounded-full mr-2 ${
-                      profileData.status === 'Approved'
-                        ? 'bg-green-500'
-                        : 'bg-yellow-500'
-                    }`}
-                  ></span>
                   {profileData.status}
-                </p>
+                </span>
               </div>
 
-              <div>
-                <p className='text-gray-500 text-sm'>Account Type</p>
-                <p className='text-gray-800 font-medium capitalize'>
-                  {profileData.role}
-                </p>
-              </div>
+              {isEditing ? (
+                <ProfileEdit />
+              ) : (
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <div className='flex items-start'>
+                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
+                      <HiOutlineMail className='h-5 w-5 text-indigo-600' />
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500'>Email Address</p>
+                      <p className='text-sm font-medium text-gray-800'>
+                        {profileData.email}
+                      </p>
+                    </div>
+                  </div>
 
-              <div className='md:col-span-2'>
-                <p className='text-gray-500 text-sm'>Address</p>
-                <p className='text-gray-800 font-medium'>
-                  {profileData.address}
-                </p>
-              </div>
+                  <div className='flex items-start'>
+                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
+                      <HiOutlinePhone className='h-5 w-5 text-indigo-600' />
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500'>Phone Number</p>
+                      <p className='text-sm font-medium text-gray-800'>
+                        {profileData.phone}
+                      </p>
+                    </div>
+                  </div>
 
-              <div>
-                <p className='text-gray-500 text-sm'>City</p>
-                <p className='text-gray-800 font-medium'>{profileData.city}</p>
-              </div>
+                  <div className='md:col-span-2 flex items-start'>
+                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
+                      <HiOutlineGlobe className='h-5 w-5 text-indigo-600' />
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500'>Address</p>
+                      <p className='text-sm font-medium text-gray-800'>
+                        {profileData.address}
+                      </p>
+                    </div>
+                  </div>
 
-              <div>
-                <p className='text-gray-500 text-sm'>State</p>
-                <p className='text-gray-800 font-medium'>{profileData.state}</p>
-              </div>
+                  <div className='flex items-start'>
+                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
+                      <HiLocationMarker className='h-5 w-5 text-indigo-600' />
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500'>City</p>
+                      <p className='text-sm font-medium text-gray-800'>
+                        {profileData.city}
+                      </p>
+                    </div>
+                  </div>
 
-              <div>
-                <p className='text-gray-500 text-sm'>Account Created</p>
-                <p className='text-gray-800 font-medium'>
-                  {formatDate(profileData.createdAt)}
-                </p>
-              </div>
-
-              <div>
-                <p className='text-gray-500 text-sm'>Last Updated</p>
-                <p className='text-gray-800 font-medium'>
-                  {formatDate(profileData.updatedAt)}
-                </p>
-              </div>
+                  <div className='flex items-start'>
+                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
+                      <HiLocationMarker className='h-5 w-5 text-indigo-600' />
+                    </div>
+                    <div>
+                      <p className='text-xs text-gray-500'>State</p>
+                      <p className='text-sm font-medium text-gray-800'>
+                        {profileData.state}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Password Update Section */}
+
+            <ChangePassword
+              showPasswordForm={showPasswordForm}
+              setShowPasswordForm={setShowPasswordForm}
+            />
+          </div>
         </div>
       </div>
     </div>
