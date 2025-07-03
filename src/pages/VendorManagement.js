@@ -1,0 +1,1249 @@
+import React, { useState, useEffect } from 'react'
+import { Bar } from 'react-chartjs-2'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+import {
+  useCreateAdminBySuperAdminMutation,
+  useGetAllVenderQuery
+} from '../redux/api'
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
+
+const VendorManagement = () => {
+  // Mock data for vendors
+  const initialVendors = [
+    {
+      id: 1,
+      name: 'Pizza Corner',
+      contact: {
+        person: 'Raj Sharma',
+        email: 'raj@pizzacorner.com',
+        phone: '+91 98765 43210'
+      },
+      city: 'Mumbai',
+      logo: 'pizza-corner.jpg',
+      status: 'approved',
+      products: ['Pizza', 'Pasta', 'Garlic Bread'],
+      sales: 125400,
+      rating: 4.7,
+      reviews: 142,
+      registrationDate: '2023-01-15'
+    },
+    {
+      id: 2,
+      name: 'Spice Garden',
+      contact: {
+        person: 'Priya Patel',
+        email: 'priya@spicegarden.com',
+        phone: '+91 87654 32109'
+      },
+      city: 'Delhi',
+      logo: 'spice-garden.jpg',
+      status: 'approved',
+      products: ['Biryani', 'Curry', 'Naan'],
+      sales: 98500,
+      rating: 4.5,
+      reviews: 98,
+      registrationDate: '2023-02-20'
+    },
+    {
+      id: 3,
+      name: 'Burger King',
+      contact: {
+        person: 'Vikram Singh',
+        email: 'vikram@burgerking.com',
+        phone: '+91 76543 21098'
+      },
+      city: 'Bangalore',
+      logo: 'burger-king.jpg',
+      status: 'approved',
+      products: ['Burgers', 'Fries', 'Shakes'],
+      sales: 75600,
+      rating: 4.3,
+      reviews: 87,
+      registrationDate: '2023-03-10'
+    },
+    {
+      id: 4,
+      name: 'Sweet Corner',
+      contact: {
+        person: 'Ananya Gupta',
+        email: 'ananya@sweetcorner.com',
+        phone: '+91 65432 10987'
+      },
+      city: 'Kolkata',
+      logo: 'sweet-corner.jpg',
+      status: 'approved',
+      products: ['Desserts', 'Cakes', 'Ice Cream'],
+      sales: 63200,
+      rating: 4.8,
+      reviews: 115,
+      registrationDate: '2023-04-05'
+    },
+    {
+      id: 5,
+      name: 'Fresh Juice Bar',
+      contact: {
+        person: 'Arjun Mehta',
+        email: 'arjun@freshjuice.com',
+        phone: '+91 54321 09876'
+      },
+      city: 'Chennai',
+      logo: '',
+      status: 'pending',
+      products: ['Juices', 'Smoothies', 'Salads'],
+      sales: 0,
+      rating: 0,
+      reviews: 0,
+      registrationDate: '2023-06-10'
+    },
+    {
+      id: 6,
+      name: 'Sushi House',
+      contact: {
+        person: 'Neha Reddy',
+        email: 'neha@sushihouse.com',
+        phone: '+91 43210 98765'
+      },
+      city: 'Hyderabad',
+      logo: 'sushi-house.jpg',
+      status: 'rejected',
+      products: ['Sushi', 'Ramen', 'Dumplings'],
+      sales: 0,
+      rating: 0,
+      reviews: 0,
+      registrationDate: '2023-05-22'
+    }
+  ]
+
+  const [createAdminBySuperAdmin] = useCreateAdminBySuperAdminMutation()
+
+  const { data } = useGetAllVenderQuery({ page: 1, limit: 10 })
+  console.log(data?.data)
+
+  // State management
+  const [vendors, setVendors] = useState(initialVendors)
+  const [editingVendor, setEditingVendor] = useState(null)
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [filter, setFilter] = useState('all')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedVendor, setSelectedVendor] = useState(null)
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [newProduct, setNewProduct] = useState('')
+
+  // Filter vendors
+  const filteredVendors = vendors.filter(vendor => {
+    // Status filter
+    const statusMatch = filter === 'all' || vendor.status === filter
+
+    // Search term filter
+    const searchMatch =
+      !searchTerm ||
+      vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vendor.contact.person.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      vendor.city.toLowerCase().includes(searchTerm.toLowerCase())
+
+    return statusMatch && searchMatch
+  })
+
+  // Approve a vendor
+  const approveVendor = id => {
+    setVendors(
+      vendors.map(v => (v.id === id ? { ...v, status: 'approved' } : v))
+    )
+  }
+
+  // Reject a vendor
+  const rejectVendor = id => {
+    setVendors(
+      vendors.map(v => (v.id === id ? { ...v, status: 'rejected' } : v))
+    )
+  }
+
+  // Delete a vendor
+  const deleteVendor = id => {
+    setVendors(vendors.filter(v => v.id !== id))
+  }
+
+  // Open vendor form
+  const handleSubmit = (vendor = null) => {
+    setEditingVendor(
+      vendor || {
+        id: null,
+        name: '',
+        contact: {
+          person: '',
+          email: '',
+          phone: ''
+        },
+        city: '',
+        logo: '',
+        status: 'pending',
+        products: [],
+        sales: 0,
+        rating: 0,
+        reviews: 0
+      }
+    )
+    setIsFormOpen(true)
+  }
+
+  // Handle form input changes
+  const handleInputChange = e => {
+    const { name, value } = e.target
+
+    if (name.startsWith('contact.')) {
+      const contactField = name.split('.')[1]
+      setEditingVendor({
+        ...editingVendor,
+        contact: {
+          ...editingVendor.contact,
+          [contactField]: value
+        }
+      })
+    } else {
+      setEditingVendor({
+        ...editingVendor,
+        [name]: value
+      })
+    }
+  }
+
+  // Submit vendor form
+  const openVendorForm = async () => {
+    // e.preventDefault()
+
+    let body = {
+      phone: '8395621571',
+      email: 'uher98098@gmail.com',
+      address: 'kanpur uttar pradesh',
+      city: 'kanpur',
+      state: 'uttar Pradesh',
+      country: 'india'
+    }
+
+    await createAdminBySuperAdmin(body)
+
+    // if (editingVendor.id) {
+    //   // Update existing vendor
+    //   setVendors(
+    //     vendors.map(v => (v.id === editingVendor.id ? editingVendor : v))
+    //   )
+    // } else {
+    //   // Add new vendor
+    //   const newVendor = {
+    //     ...editingVendor,
+    //     id: vendors.length + 1,
+    //     registrationDate: new Date().toISOString().split('T')[0]
+    //   }
+    //   setVendors([...vendors, newVendor])
+    // }
+
+    // setIsFormOpen(false)
+    // setEditingVendor(null)
+  }
+
+  // Open vendor details
+  const openVendorDetails = vendor => {
+    setSelectedVendor(vendor)
+    setIsDetailOpen(true)
+  }
+
+  // Add product to vendor
+  const addProduct = () => {
+    if (newProduct.trim() && !selectedVendor.products.includes(newProduct)) {
+      const updatedVendor = {
+        ...selectedVendor,
+        products: [...selectedVendor.products, newProduct]
+      }
+
+      setVendors(
+        vendors.map(v => (v.id === selectedVendor.id ? updatedVendor : v))
+      )
+      setSelectedVendor(updatedVendor)
+      setNewProduct('')
+    }
+  }
+
+  // Remove product from vendor
+  const removeProduct = product => {
+    const updatedVendor = {
+      ...selectedVendor,
+      products: selectedVendor.products.filter(p => p !== product)
+    }
+
+    setVendors(
+      vendors.map(v => (v.id === selectedVendor.id ? updatedVendor : v))
+    )
+    setSelectedVendor(updatedVendor)
+  }
+
+  // Sales chart data
+  const salesChartData = {
+    labels: vendors.filter(v => v.status === 'approved').map(v => v.name),
+    datasets: [
+      {
+        label: 'Sales (₹)',
+        data: vendors.filter(v => v.status === 'approved').map(v => v.sales),
+        backgroundColor: 'rgba(79, 70, 229, 0.7)',
+        borderColor: 'rgba(79, 70, 229, 1)',
+        borderWidth: 1
+      }
+    ]
+  }
+
+  const salesChartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top'
+      },
+      title: {
+        display: true,
+        text: 'Vendor Sales Performance',
+        font: {
+          size: 16
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function (value) {
+            return '₹' + value.toLocaleString()
+          }
+        }
+      }
+    }
+  }
+
+  return (
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8'>
+      <div className='max-w-7xl mx-auto'>
+        {/* Header */}
+        <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
+          <div>
+            <h1 className='text-3xl font-bold text-gray-800'>
+              Vendor Management
+            </h1>
+            <p className='text-gray-600 mt-2'>
+              Manage restaurant partners and their products
+            </p>
+          </div>
+          <button
+            onClick={() => openVendorForm()}
+            className='mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5'
+          >
+            + Add New Vendor
+          </button>
+        </div>
+
+        {/* Stats Cards */}
+        <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mb-8'>
+          <div className='bg-white rounded-2xl shadow-xl p-6'>
+            <div className='flex items-center'>
+              <div className='bg-green-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-8 w-8 text-green-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z'
+                  />
+                </svg>
+              </div>
+              <div className='ml-4'>
+                <p className='text-sm text-gray-500'>Total Vendors</p>
+                <p className='text-2xl font-bold text-gray-800'>
+                  {vendors.length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className='bg-white rounded-2xl shadow-xl p-6'>
+            <div className='flex items-center'>
+              <div className='bg-blue-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-8 w-8 text-blue-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
+                  />
+                </svg>
+              </div>
+              <div className='ml-4'>
+                <p className='text-sm text-gray-500'>Approved Vendors</p>
+                <p className='text-2xl font-bold text-gray-800'>
+                  {vendors.filter(v => v.status === 'approved').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className='bg-white rounded-2xl shadow-xl p-6'>
+            <div className='flex items-center'>
+              <div className='bg-yellow-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-8 w-8 text-yellow-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+              </div>
+              <div className='ml-4'>
+                <p className='text-sm text-gray-500'>Pending Approval</p>
+                <p className='text-2xl font-bold text-gray-800'>
+                  {vendors.filter(v => v.status === 'pending').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className='bg-white rounded-2xl shadow-xl p-6'>
+            <div className='flex items-center'>
+              <div className='bg-purple-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-8 w-8 text-purple-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+              </div>
+              <div className='ml-4'>
+                <p className='text-sm text-gray-500'>Total Sales</p>
+                <p className='text-2xl font-bold text-gray-800'>
+                  ₹
+                  {vendors
+                    .reduce((sum, vendor) => sum + vendor.sales, 0)
+                    .toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters and Search */}
+        <div className='bg-white rounded-2xl shadow-xl p-6 mb-8'>
+          <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
+            {/* Search */}
+            <div className='md:col-span-2'>
+              <label className='block text-gray-700 text-sm font-medium mb-2'>
+                Search Vendors
+              </label>
+              <div className='relative'>
+                <input
+                  type='text'
+                  placeholder='Search by name, contact person, or city...'
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                />
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-5 w-5 absolute right-3 top-3.5 text-gray-400'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
+                  />
+                </svg>
+              </div>
+            </div>
+
+            {/* Status Filter */}
+            <div>
+              <label className='block text-gray-700 text-sm font-medium mb-2'>
+                Status
+              </label>
+              <select
+                value={filter}
+                onChange={e => setFilter(e.target.value)}
+                className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+              >
+                <option value='all'>All Status</option>
+                <option value='approved'>Approved</option>
+                <option value='pending'>Pending</option>
+                <option value='rejected'>Rejected</option>
+              </select>
+            </div>
+
+            {/* Sales Chart Toggle */}
+            <div>
+              <label className='block text-gray-700 text-sm font-medium mb-2'>
+                Actions
+              </label>
+              <button
+                className='w-full p-3 bg-indigo-100 text-indigo-700 font-medium rounded-xl hover:bg-indigo-200'
+                onClick={() =>
+                  document
+                    .getElementById('salesChart')
+                    .scrollIntoView({ behavior: 'smooth' })
+                }
+              >
+                View Sales Chart
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Vendors Table */}
+        <div className='bg-white rounded-2xl shadow-xl overflow-hidden mb-8'>
+          <div className='overflow-x-auto'>
+            <table className='min-w-full divide-y divide-gray-200'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Vendor
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Contact
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    City
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Status
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Products
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Sales
+                  </th>
+                  <th
+                    scope='col'
+                    className='px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {filteredVendors.map(vendor => (
+                  <tr
+                    key={vendor.id}
+                    className='hover:bg-gray-50 transition-colors'
+                  >
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='flex items-center'>
+                        <div className='flex-shrink-0 h-10 w-10 bg-gray-200 rounded-lg overflow-hidden'>
+                          {vendor.logo ? (
+                            <img
+                              className='h-full w-full object-cover'
+                              src={'/image/shop.png'}
+                              alt={vendor.name}
+                            />
+                          ) : (
+                            <div className='bg-gray-200 border-2 border-dashed rounded-xl w-full h-full flex items-center justify-center'>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-5 w-5 text-gray-400'
+                                fill='none'
+                                viewBox='0 0 24 24'
+                                stroke='currentColor'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
+                                />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        <div className='ml-4'>
+                          <div className='text-sm font-medium text-gray-900'>
+                            {vendor.name}
+                          </div>
+                          <div className='text-sm text-gray-500'>
+                            ID: {vendor.id}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm text-gray-900'>
+                        {vendor.contact.person}
+                      </div>
+                      <div className='text-sm text-gray-500'>
+                        {vendor.contact.phone}
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {vendor.city}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <span
+                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          vendor.status === 'approved'
+                            ? 'bg-green-100 text-green-800'
+                            : vendor.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {vendor.status.charAt(0).toUpperCase() +
+                          vendor.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      <div className='flex flex-wrap gap-1 max-w-xs'>
+                        {vendor.products.slice(0, 3).map((product, idx) => (
+                          <span
+                            key={idx}
+                            className='px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded'
+                          >
+                            {product}
+                          </span>
+                        ))}
+                        {vendor.products.length > 3 && (
+                          <span className='px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded'>
+                            +{vendor.products.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                      ₹{vendor.sales.toLocaleString()}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
+                      <div className='flex justify-end space-x-2'>
+                        <button
+                          onClick={() => openVendorDetails(vendor)}
+                          className='text-indigo-600 hover:text-indigo-900'
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-5 w-5'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                            />
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => openVendorForm(vendor)}
+                          className='text-blue-600 hover:text-blue-900'
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-5 w-5'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => deleteVendor(vendor.id)}
+                          className='text-red-600 hover:text-red-900'
+                        >
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-5 w-5'
+                            fill='none'
+                            viewBox='0 0 24 24'
+                            stroke='currentColor'
+                          >
+                            <path
+                              strokeLinecap='round'
+                              strokeLinejoin='round'
+                              strokeWidth={2}
+                              d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {filteredVendors.length === 0 && (
+              <div className='text-center py-12'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-16 w-16 mx-auto text-gray-400'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+                <h3 className='mt-4 text-lg font-medium text-gray-900'>
+                  No vendors found
+                </h3>
+                <p className='mt-1 text-gray-500'>
+                  Try adjusting your search or filter criteria
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sales Chart */}
+        <div
+          id='salesChart'
+          className='bg-white rounded-2xl shadow-xl p-6 mb-8'
+        >
+          <h2 className='text-xl font-bold text-gray-800 mb-6'>
+            Vendor Sales Performance
+          </h2>
+          <div className='h-80'>
+            <Bar data={salesChartData} options={salesChartOptions} />
+          </div>
+        </div>
+      </div>
+
+      {/* Vendor Detail Modal */}
+      {isDetailOpen && selectedVendor && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto'>
+            <div className='p-6'>
+              <div className='flex justify-between items-center mb-6'>
+                <div>
+                  <h3 className='text-2xl font-bold text-gray-800'>
+                    {selectedVendor.name}
+                  </h3>
+                  <p className='text-gray-600'>
+                    {selectedVendor.city} • Registered on{' '}
+                    {selectedVendor.registrationDate}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsDetailOpen(false)}
+                  className='text-gray-500 hover:text-gray-700'
+                >
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-6 w-6'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M6 18L18 6M6 6l12 12'
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+                {/* Left Column - Vendor Info */}
+                <div className='md:col-span-2'>
+                  <div className='bg-gray-50 rounded-xl p-6 mb-6'>
+                    <h4 className='text-lg font-bold text-gray-800 mb-4'>
+                      Vendor Information
+                    </h4>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                      <div>
+                        <p className='text-sm text-gray-500'>Contact Person</p>
+                        <p className='font-medium'>
+                          {selectedVendor.contact.person}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Email</p>
+                        <p className='font-medium'>
+                          {selectedVendor.contact.email}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Phone</p>
+                        <p className='font-medium'>
+                          {selectedVendor.contact.phone}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Status</p>
+                        <p
+                          className={`font-medium ${
+                            selectedVendor.status === 'approved'
+                              ? 'text-green-600'
+                              : selectedVendor.status === 'pending'
+                              ? 'text-yellow-600'
+                              : 'text-red-600'
+                          }`}
+                        >
+                          {selectedVendor.status.charAt(0).toUpperCase() +
+                            selectedVendor.status.slice(1)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedVendor.status === 'pending' && (
+                      <div className='mt-6 flex space-x-4'>
+                        <button
+                          onClick={() => approveVendor(selectedVendor.id)}
+                          className='px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700'
+                        >
+                          Approve Vendor
+                        </button>
+                        <button
+                          onClick={() => rejectVendor(selectedVendor.id)}
+                          className='px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700'
+                        >
+                          Reject Vendor
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Product Access */}
+                  <div className='bg-gray-50 rounded-xl p-6'>
+                    <h4 className='text-lg font-bold text-gray-800 mb-4'>
+                      Product Access
+                    </h4>
+                    <p className='text-sm text-gray-500 mb-4'>
+                      Vendors can only add/edit products assigned to them
+                    </p>
+
+                    <div className='mb-6'>
+                      <div className='flex items-center mb-4'>
+                        <input
+                          type='text'
+                          placeholder='Add new product category...'
+                          value={newProduct}
+                          onChange={e => setNewProduct(e.target.value)}
+                          className='flex-grow p-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                        />
+                        <button
+                          onClick={addProduct}
+                          className='px-4 py-2 bg-indigo-600 text-white font-medium rounded-r-lg hover:bg-indigo-700'
+                        >
+                          Add
+                        </button>
+                      </div>
+
+                      <div className='flex flex-wrap gap-2'>
+                        {selectedVendor.products.map((product, idx) => (
+                          <div
+                            key={idx}
+                            className='flex items-center bg-purple-100 rounded-lg px-3 py-2'
+                          >
+                            <span className='text-purple-800 font-medium'>
+                              {product}
+                            </span>
+                            <button
+                              onClick={() => removeProduct(product)}
+                              className='ml-2 text-purple-500 hover:text-purple-700'
+                            >
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-4 w-4'
+                                fill='none'
+                                viewBox='0 0 24 24'
+                                stroke='currentColor'
+                              >
+                                <path
+                                  strokeLinecap='round'
+                                  strokeLinejoin='round'
+                                  strokeWidth={2}
+                                  d='M6 18L18 6M6 6l12 12'
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                        {selectedVendor.products.length === 0 && (
+                          <p className='text-gray-500 italic'>
+                            No products assigned yet
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Stats */}
+                <div>
+                  {/* Sales Stats */}
+                  <div className='bg-gray-50 rounded-xl p-6 mb-6'>
+                    <h4 className='text-lg font-bold text-gray-800 mb-4'>
+                      Sales Performance
+                    </h4>
+                    <div className='space-y-3'>
+                      <div>
+                        <p className='text-sm text-gray-500'>Total Sales</p>
+                        <p className='text-2xl font-bold text-gray-800'>
+                          ₹{selectedVendor.sales.toLocaleString()}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>Products</p>
+                        <p className='font-medium'>
+                          {selectedVendor.products.length} categories
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-sm text-gray-500'>
+                          Average Order Value
+                        </p>
+                        <p className='font-medium'>
+                          ₹
+                          {(selectedVendor.sales > 0
+                            ? selectedVendor.sales / 100
+                            : 0
+                          ).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ratings & Reviews */}
+                  <div className='bg-gray-50 rounded-xl p-6'>
+                    <h4 className='text-lg font-bold text-gray-800 mb-4'>
+                      Ratings & Reviews
+                    </h4>
+                    <div className='flex items-center mb-4'>
+                      <div className='text-3xl font-bold text-gray-800 mr-4'>
+                        {selectedVendor.rating > 0
+                          ? selectedVendor.rating.toFixed(1)
+                          : 'N/A'}
+                      </div>
+                      <div>
+                        <div className='flex'>
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              xmlns='http://www.w3.org/2000/svg'
+                              className={`h-5 w-5 ${
+                                i < Math.floor(selectedVendor.rating)
+                                  ? 'text-yellow-400'
+                                  : 'text-gray-300'
+                              }`}
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
+                            </svg>
+                          ))}
+                        </div>
+                        <p className='text-sm text-gray-500 mt-1'>
+                          {selectedVendor.reviews} reviews
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Sample Reviews */}
+                    {selectedVendor.reviews > 0 && (
+                      <div className='space-y-4'>
+                        <div className='border-t border-gray-200 pt-4'>
+                          <div className='flex justify-between'>
+                            <p className='font-medium'>Rajesh Kumar</p>
+                            <div className='flex text-yellow-400'>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-4 w-4'
+                                viewBox='0 0 20 20'
+                                fill='currentColor'
+                              >
+                                <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
+                              </svg>
+                              <span className='text-gray-700 ml-1'>5.0</span>
+                            </div>
+                          </div>
+                          <p className='text-sm text-gray-600 mt-1'>
+                            Excellent food quality and timely delivery. Highly
+                            recommended!
+                          </p>
+                          <p className='text-xs text-gray-400 mt-2'>
+                            2 days ago
+                          </p>
+                        </div>
+
+                        <div className='border-t border-gray-200 pt-4'>
+                          <div className='flex justify-between'>
+                            <p className='font-medium'>Priya Sharma</p>
+                            <div className='flex text-yellow-400'>
+                              <svg
+                                xmlns='http://www.w3.org/2000/svg'
+                                className='h-4 w-4'
+                                viewBox='0 0 20 20'
+                                fill='currentColor'
+                              >
+                                <path d='M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z' />
+                              </svg>
+                              <span className='text-gray-700 ml-1'>4.5</span>
+                            </div>
+                          </div>
+                          <p className='text-sm text-gray-600 mt-1'>
+                            Good variety of dishes, but packaging could be
+                            better.
+                          </p>
+                          <p className='text-xs text-gray-400 mt-2'>
+                            1 week ago
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedVendor.reviews === 0 && (
+                      <div className='text-center py-4'>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          className='h-12 w-12 mx-auto text-gray-300'
+                          fill='none'
+                          viewBox='0 0 24 24'
+                          stroke='currentColor'
+                        >
+                          <path
+                            strokeLinecap='round'
+                            strokeLinejoin='round'
+                            strokeWidth={2}
+                            d='M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z'
+                          />
+                        </svg>
+                        <p className='text-gray-500 mt-2'>No reviews yet</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Vendor Form Modal */}
+      {isFormOpen && (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4'>
+          <div className='bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto'>
+            <div className='p-6'>
+              <div className='flex justify-between items-center mb-6'>
+                <h3 className='text-2xl font-bold text-gray-800'>
+                  {editingVendor.id ? 'Edit Vendor' : 'Add New Vendor'}
+                </h3>
+                <button
+                  onClick={() => setIsFormOpen(false)}
+                  className='text-gray-500 hover:text-gray-700'
+                >
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-6 w-6'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M6 18L18 6M6 6l12 12'
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit}>
+                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                  <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Vendor Name
+                    </label>
+                    <input
+                      type='text'
+                      name='name'
+                      value={editingVendor.name}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>City</label>
+                    <input
+                      type='text'
+                      name='city'
+                      value={editingVendor.city}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Contact Person
+                    </label>
+                    <input
+                      type='text'
+                      name='contact.person'
+                      value={editingVendor.contact.person}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Contact Email
+                    </label>
+                    <input
+                      type='email'
+                      name='contact.email'
+                      value={editingVendor.contact.email}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Contact Phone
+                    </label>
+                    <input
+                      type='text'
+                      name='contact.phone'
+                      value={editingVendor.contact.phone}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>Logo URL</label>
+                    <input
+                      type='text'
+                      name='logo'
+                      value={editingVendor.logo}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      placeholder='https://example.com/logo.jpg'
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>Status</label>
+                    <select
+                      name='status'
+                      value={editingVendor.status}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                    >
+                      <option value='approved'>Approved</option>
+                      <option value='pending'>Pending</option>
+                      <option value='rejected'>Rejected</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className='mt-8 flex justify-end space-x-4'>
+                  <button
+                    type='button'
+                    onClick={() => setIsFormOpen(false)}
+                    className='px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50'
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type='submit'
+                    className='px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all'
+                  >
+                    {editingVendor.id ? 'Update Vendor' : 'Add Vendor'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default VendorManagement
