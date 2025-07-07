@@ -5,13 +5,14 @@ import {
   FaClipboardList,
   // FaUsers,
   FaMoneyCheckAlt,
-  FaStore,
+  FaStore
   // FaChartBar
 } from 'react-icons/fa'
 import { IoExitOutline } from 'react-icons/io5'
 // import { FiSettings } from 'react-icons/fi'
 // import { MdOutlineDashboard } from 'react-icons/md'
 import { useGetCurrentUserQuery, useLogoutMutation } from '../redux/api'
+import Cookies from 'js-cookie'
 
 const Sidebar = () => {
   // Create a reusable NavItem component to handle active state
@@ -49,7 +50,15 @@ const Sidebar = () => {
   // console.log(CurrentUser)
 
   const handelLogOut = async () => {
-    await logout()
+    try {
+      Cookies.remove('accessToken') // Clear token
+      navigate('/') // Redirect to home
+      setTimeout(() => {
+        window.location.reload() // Reload after navigation
+      }, 100)
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
   }
 
   return (
@@ -58,7 +67,11 @@ const Sidebar = () => {
       <div className='mb-5 pt-2 flex-col justify-center items-center gap-3 border-b border-gray-700 pb-5'>
         <div className='flex justify-center ' onClick={() => navigate('/Home')}>
           {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
-          <img src='/image/logo1.png' className='w-[130px] h-[57px]' alt='of logo' />
+          <img
+            src='/image/logo1.png'
+            className='w-[130px] h-[57px]'
+            alt='of logo'
+          />
         </div>
         {/* <div>
           <h1 className='text-2xl font-bold'>Admin</h1>

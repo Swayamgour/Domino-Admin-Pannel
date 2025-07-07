@@ -7,6 +7,8 @@ import {
   useGetCurrentUserQuery
 } from '../redux/api'
 import Cookies from 'js-cookie'
+import Loader from '../component/Loader'
+import toast from 'react-hot-toast'
 
 const LoginPage = () => {
   const [upDatePass] = useState(true)
@@ -38,14 +40,18 @@ const LoginPage = () => {
     await loginForAll(body)
   }
 
-  // console.log(result?.data?.message?.accessToken  , result)
+  // console.log(result?.data?.message?.accessToken)
 
   useEffect(() => {
     if (result?.data?.data?.accessToken) {
       Cookies.set('accessToken', result.data.data.accessToken, {
         expires: 7
       })
-      navigate('/Home')
+      if (result?.data?.data?.user?.role === 'customer') {
+        toast.error('User Not Exits')
+      } else {
+        navigate('/Home')
+      }
     }
   }, [result?.isSuccess, navigate, result?.data?.data?.accessToken])
 
@@ -58,11 +64,18 @@ const LoginPage = () => {
   const { data, isSuccess, isLoading } = useGetCurrentUserQuery()
   // const navigate = useNavigate()
 
+  // console.log(data)
+
   useEffect(() => {
     if (isSuccess && data?.success) {
+      // if (data?.user?.role !== 'customer') {
+      //
+      // } else {
+      //   toast.error('User Not Exits')
+      // }
       navigate('/Home')
     }
-  }, [isSuccess, data , navigate])
+  }, [isSuccess, data, navigate])
 
   if (isLoading)
     return (
@@ -73,6 +86,7 @@ const LoginPage = () => {
 
   return (
     <diV>
+      {result?.isLoading && <Loader />}
       {/* {isSuccess && ( */}
       <div className='min-h-screen bg-gray-300 flex items-center justify-center p-4 '>
         <div className='w-full max-w-4xl bg-white rounded-[2rem] overflow-hidden shadow-2xl flex flex-col lg:flex-row'>
