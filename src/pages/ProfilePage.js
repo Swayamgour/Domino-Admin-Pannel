@@ -22,7 +22,7 @@ const ProfilePage = () => {
   const [showPasswordForm, setShowPasswordForm] = useState(false)
 
   const [profileData, setProfileData] = useState({
-    ...userData?.message,
+    ...userData?.data,
     profileImage:
       'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'
   })
@@ -92,18 +92,20 @@ const ProfilePage = () => {
     setTimeout(() => setPasswordSuccess(''), 3000)
   }
 
+  console.log(profileData?.data)
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6'>
       <div className='max-w-6xl mx-auto'>
         {/* Header */}
-        <div className='text-center mb-10'>
+        {/* <div className='text-center mb-10'>
           <h1 className='text-3xl md:text-4xl font-bold text-gray-800 mb-2'>
             Business Profile
           </h1>
           <p className='text-gray-600 max-w-md mx-auto'>
             Manage your account information and settings
           </p>
-        </div>
+        </div> */}
 
         <div className='flex flex-col lg:flex-row gap-6'>
           {/* Profile Card (Left Sidebar) */}

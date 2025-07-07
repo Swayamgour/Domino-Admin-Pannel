@@ -76,14 +76,18 @@ export default function AnchorTemporaryDrawer () {
       onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
     >
-      <div className='w-64 min-h-screen bg-gradient-to-b from-gray-800 to-gray-900 text-white p-5 fixed left-0 top-0  flex flex-col shadow-xl z-50'>
+      <div className='w-64 min-h-full bg-gradient-to-b from-gray-800 to-gray-900 text-white p-5 fixed left-0 top-0  flex flex-col shadow-xl z-50'>
         {/* Branding */}
         <div className='mb-5 pt-2 flex items-center gap-3 border-b border-gray-700 pb-5'>
           <div className='bg-indigo-600 p-2 rounded-lg'>
             <MdOutlineDashboard className='text-2xl' />
           </div>
           <div>
-            <h1 className='text-2xl font-bold'>Admin</h1>
+            <h1 className='text-2xl font-bold'>
+              {CurrentUser?.data?.role === 'frenchies'
+                ? 'Admin'
+                : 'Super Admin'}
+            </h1>
             <p className='text-xs text-gray-400'>Dashboard v3.0</p>
           </div>
         </div>
@@ -91,17 +95,22 @@ export default function AnchorTemporaryDrawer () {
         {/* Navigation */}
         <nav className='space-y-1 flex-1 '>
           <NavItem to='/Home' icon={FaHome} label='Dashboard' />
-          <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
+          {/* <NavItem to='/Products' icon={FaBoxOpen} label='Products' /> */}
+          {CurrentUser?.data?.role === 'frenchies' && (
+            <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
+          )}
+
+          {/* <NavItem to="/Vendor" icon={FaStore} label="Vendors" /> */}
+          {CurrentUser?.data?.role != 'frenchies' && (
+            <NavItem to='/Vendor' icon={FaStore} label='Frenchie' />
+          )}
+
           <NavItem
             to='/OrderManagement'
             icon={FaClipboardList}
             label='Orders'
           />
-          {/* <NavItem to="/Vendor" icon={FaStore} label="Vendors" /> */}
-          {CurrentUser?.message?.role != 'frenchies' && (
-            <NavItem to='/Vendor' icon={FaStore} label='Vendors' />
-          )}
-          <NavItem to='/users' icon={FaUsers} label='Users' />
+          {/* <NavItem to='/users' icon={FaUsers} label='Users' /> */}
           <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />
           {/* <NavItem to="/reports" icon={FaChartBar} label="Reports" /> */}
           {/* <NavItem to="/settings" icon={FiSettings} label="Settings" /> */}

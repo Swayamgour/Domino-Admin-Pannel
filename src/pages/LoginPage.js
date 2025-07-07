@@ -38,11 +38,11 @@ const LoginPage = () => {
     const response = await loginForAll(body)
   }
 
-  // console.log(result?.data?.message?.accessToken)
+  console.log(result?.data?.message?.accessToken  , result)
 
   useEffect(() => {
-    if (result?.data?.message?.accessToken) {
-      Cookies.set('accessToken', result.data.message.accessToken, {
+    if (result?.data?.data?.accessToken) {
+      Cookies.set('accessToken', result.data.data.accessToken, {
         expires: 7
       })
       navigate('/Home')

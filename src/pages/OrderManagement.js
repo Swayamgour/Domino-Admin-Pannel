@@ -1,874 +1,612 @@
-import React, { useState } from 'react'
-import { format } from 'date-fns'
-import { HiOutlineMenu } from 'react-icons/hi'
-import { HiOutlineClipboard } from 'react-icons/hi'
-import { HiOutlineSearch } from 'react-icons/hi';
-import { HiOutlineEmojiSad } from 'react-icons/hi';
-// import { HiOutlineEmojiSad } from 'react-icons/hi';
-import { HiOutlineX } from 'react-icons/hi';
+import React, { useState, useEffect } from 'react'
+import { useGetAllVenderQuery } from '../redux/api'
+import { useNavigate } from 'react-router-dom'
 
-
-
-const OrderManagement = () => {
-  // Mock data for orders
-  const initialOrders = [
-    // ... (same as original)
-  ]
-
-  // State management
-  const [orders] = useState(initialOrders)
-  const [selectedOrder, setSelectedOrder] = useState(null)
-  const [isDetailOpen, setIsDetailOpen] = useState(false)
-  const [filters, setFilters] = useState({
-    date: '',
-    vendor: 'all',
-    status: 'all',
-    search: ''
+const OrderDashboard = () => {
+  const { data: AllVender, isSuccess } = useGetAllVenderQuery({
+    page: 1,
+    limit: 10
   })
-  const [deliveryStaff] = useState([
-    { id: 1, name: 'Rahul K.', status: 'available' },
-    { id: 2, name: 'Amit S.', status: 'on-delivery' },
-    { id: 3, name: 'Neha R.', status: 'available' },
-    { id: 4, name: 'Priya M.', status: 'available' }
-  ])
-  const [refundReason, setRefundReason] = useState('')
-  const [refundAmount, setRefundAmount] = useState('')
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  // Sample data
 
-  // Filter orders
-  const filteredOrders = orders.filter(order => {
-    // Date filter
-    const dateMatch =
-      !filters.date || format(order.date, 'yyyy-MM-dd') === filters.date
+  let initialData = (isSuccess && AllVender?.data) || []
 
-    // Vendor filter
-    const vendorMatch =
-      filters.vendor === 'all' || order.vendor === filters.vendor
+  const Navigate = useNavigate()
 
-    // Status filter
-    const statusMatch =
-      filters.status === 'all' || order.status === filters.status
+  const [data, setData] = useState(initialData || [])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('newest')
+  const [activeFilter, setActiveFilter] = useState('all')
 
-    // Search filter
-    const searchMatch =
-      !filters.search ||
-      order.id.toLowerCase().includes(filters.search.toLowerCase()) ||
-      order.customer.name
-        .toLowerCase()
-        .includes(filters.search.toLowerCase()) ||
-      order.customer.phone.includes(filters.search)
+  // Filter data based on search term and filters
+  const filteredData = data.filter(item => {
+    const matchesSearch =
+      item.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.frenchieName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.role.toLowerCase().includes(searchTerm.toLowerCase())
 
-    return dateMatch && vendorMatch && statusMatch && searchMatch
+    const matchesStatus = statusFilter === 'all' || item.status === statusFilter
+    const matchesActive =
+      activeFilter === 'all' ||
+      (activeFilter === 'active' && item.isActivated) ||
+      (activeFilter === 'inactive' && !item.isActivated)
+
+    return matchesSearch && matchesStatus && matchesActive
   })
 
-  // Vendor options
-  const vendors = [...new Set(orders.map(order => order.vendor))]
+  // Sort data
+  useEffect(() => {
+    if (isSuccess) {
+      const sortedData = [...initialData]
 
-  // Status options
-  const statusOptions = [
-    {
-      value: 'pending',
-      label: 'Pending',
-      color: 'bg-yellow-100 text-yellow-800'
-    },
-    {
-      value: 'preparing',
-      label: 'Preparing',
-      color: 'bg-blue-100 text-blue-800'
-    },
-    {
-      value: 'out-for-delivery',
-      label: 'Out for Delivery',
-      color: 'bg-indigo-100 text-indigo-800'
-    },
-    {
-      value: 'delivered',
-      label: 'Delivered',
-      color: 'bg-green-100 text-green-800'
-    },
-    { value: 'canceled', label: 'Canceled', color: 'bg-red-100 text-red-800' },
-    {
-      value: 'refund-requested',
-      label: 'Refund Requested',
-      color: 'bg-purple-100 text-purple-800'
-    },
-    { value: 'refunded', label: 'Refunded', color: 'bg-gray-100 text-gray-800' }
-  ]
+      if (sortBy === 'newest') {
+        sortedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      } else if (sortBy === 'oldest') {
+        sortedData.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+      } else if (sortBy === 'salesHigh') {
+        sortedData.sort((a, b) => b.salesCount - a.salesCount)
+      } else if (sortBy === 'salesLow') {
+        sortedData.sort((a, b) => a.salesCount - b.salesCount)
+      }
 
-  // Open order details
-  const openOrderDetails = order => {
-    setSelectedOrder(order)
-    setIsDetailOpen(true)
-    setIsMenuOpen(false)
-  }
-
-  // Update order status
-  const updateOrderStatus = (orderId, newStatus) => {
-    // Implementation would update order status
-  }
-
-  // Assign delivery staff
-  const assignDeliveryStaff = (orderId, staffName) => {
-    // Implementation would assign staff
-  }
-
-  // Process refund
-  const processRefund = () => {
-    // Implementation would process refund
-  }
-
-  // Get status label and color
-  const getStatusInfo = status => {
-    return statusOptions.find(option => option.value === status)
-  }
-
-  // Get status color for mobile view
-  const getStatusColor = status => {
-    switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
-      case 'preparing':
-        return 'bg-blue-100 text-blue-800'
-      case 'out-for-delivery':
-        return 'bg-indigo-100 text-indigo-800'
-      case 'delivered':
-        return 'bg-green-100 text-green-800'
-      case 'canceled':
-        return 'bg-red-100 text-red-800'
-      case 'refund-requested':
-        return 'bg-purple-100 text-purple-800'
-      case 'refunded':
-        return 'bg-gray-100 text-gray-800'
-      default:
-        return 'bg-gray-100 text-gray-800'
+      setData(sortedData)
     }
-  }
+  }, [sortBy, isSuccess])
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-3 md:p-6'>
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8'>
       <div className='max-w-7xl mx-auto'>
-        {/* Mobile header */}
-        <div className='md:hidden flex justify-between items-center mb-4'>
-          <div>
-            <h1 className='text-xl font-bold text-gray-800'>
-              Order Management
-            </h1>
-            <p className='text-xs text-gray-600 mt-1'>Manage customer orders</p>
-          </div>
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className='p-2 rounded-lg bg-indigo-600 text-white'
-          >
-            <HiOutlineMenu className='h-5 w-5' />
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {isMenuOpen && (
-          <div className='md:hidden bg-white rounded-xl shadow-lg p-4 mb-4'>
-            <div className='mb-4'>
-              <input
-                type='text'
-                placeholder='Search orders...'
-                value={filters.search}
-                onChange={e =>
-                  setFilters({ ...filters, search: e.target.value })
-                }
-                className='w-full p-2 border border-gray-300 rounded-lg'
-              />
+        {/* Header */}
+        <header className='mb-10'>
+          <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
+            <div>
+              <h1 className='text-3xl md:text-4xl font-bold text-gray-900'>
+                Order Dashboard
+              </h1>
+              <p className='text-gray-600 mt-2'>
+                Manage all your orders and franchises in one place
+              </p>
             </div>
-            <div className='mb-4'>
-              <input
-                type='date'
-                value={filters.date}
-                onChange={e => setFilters({ ...filters, date: e.target.value })}
-                className='w-full p-2 border border-gray-300 rounded-lg'
-              />
-            </div>
-            <div className='grid grid-cols-2 gap-3'>
-              <div>
-                <label className='block text-gray-700 text-xs mb-1'>
-                  Vendor
-                </label>
-                <select
-                  value={filters.vendor}
-                  onChange={e =>
-                    setFilters({ ...filters, vendor: e.target.value })
-                  }
-                  className='w-full p-2 border border-gray-300 rounded-lg text-sm'
-                >
-                  <option value='all'>All Vendors</option>
-                  {vendors.map(vendor => (
-                    <option key={vendor} value={vendor}>
-                      {vendor}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className='block text-gray-700 text-xs mb-1'>
-                  Status
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={e =>
-                    setFilters({ ...filters, status: e.target.value })
-                  }
-                  className='w-full p-2 border border-gray-300 rounded-lg text-sm'
-                >
-                  <option value='all'>All Status</option>
-                  {statusOptions.map(status => (
-                    <option key={status.value} value={status.value}>
-                      {status.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Desktop Header */}
-        <div className='hidden md:flex flex-col md:flex-row md:items-center justify-between mb-6'>
-          <div>
-            <h1 className='text-2xl md:text-3xl font-bold text-gray-800'>
-              Order Management
-            </h1>
-            <p className='text-gray-600 mt-1'>
-              Manage all customer orders efficiently
-            </p>
-          </div>
-          <div className='mt-4 md:mt-0'>
-            <div className='flex items-center'>
-              <div className='bg-green-100 p-2 rounded-lg'>
-                <HiOutlineClipboard className='h-6 w-6 text-green-600' />
-              </div>
-
-              <div className='ml-4'>
-                <p className='text-sm text-gray-500'>Today's Orders</p>
-                <p className='text-xl font-bold text-gray-800'>
-                  {
-                    orders.filter(
-                      o =>
-                        format(o.date, 'yyyy-MM-dd') ===
-                        format(new Date(), 'yyyy-MM-dd')
-                    ).length
-                  }
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters Section - Desktop */}
-        <div className='hidden md:block bg-white rounded-xl shadow p-4 md:p-6 mb-6'>
-          <div className='grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4'>
-            {/* Search */}
-            <div className='md:col-span-2'>
-              <label className='block text-gray-700 text-sm font-medium mb-1'>
-                Search Orders
-              </label>
+            <div className='flex items-center gap-3'>
               <div className='relative'>
+                <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 text-gray-400'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                </div>
                 <input
                   type='text'
-                  placeholder='Search by order ID, customer name or phone...'
-                  value={filters.search}
-                  onChange={e =>
-                    setFilters({ ...filters, search: e.target.value })
-                  }
-                  className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                  placeholder='Search by city, owner, name or trade...'
+                  className='w-full md:w-80 pl-10 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm'
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
                 />
-               <HiOutlineSearch className="h-4 w-4 md:h-5 md:w-5 absolute right-3 top-2.5 md:top-3.5 text-gray-400" />
+              </div>
+              {/* <button className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg flex items-center transition duration-200 shadow-md'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-5 w-5 mr-1.5'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                New Order
+              </button> */}
+            </div>
+          </div>
+        </header>
 
+        {/* Stats Cards */}
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10'>
+          <div className='bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500'>
+            <div className='flex justify-between items-center'>
+              <div>
+                <p className='text-gray-500 text-sm font-medium'>
+                  Total Franchises
+                </p>
+                <h3 className='text-2xl font-bold text-gray-900 mt-1'>24</h3>
+              </div>
+              <div className='bg-blue-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-6 w-6 text-blue-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4'
+                  />
+                </svg>
               </div>
             </div>
+            <p className='text-green-600 text-sm font-medium mt-3'>
+              <span className='inline-flex items-center'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-4 w-4 mr-1'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                12% from last month
+              </span>
+            </p>
+          </div>
 
-            {/* Date Filter */}
-            <div>
-              <label className='block text-gray-700 text-sm font-medium mb-1'>
-                Date
-              </label>
-              <input
-                type='date'
-                value={filters.date}
-                onChange={e => setFilters({ ...filters, date: e.target.value })}
-                className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              />
+          <div className='bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500'>
+            <div className='flex justify-between items-center'>
+              <div>
+                <p className='text-gray-500 text-sm font-medium'>
+                  Total Orders
+                </p>
+                <h3 className='text-2xl font-bold text-gray-900 mt-1'>327</h3>
+              </div>
+              <div className='bg-green-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-6 w-6 text-green-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className='text-green-600 text-sm font-medium mt-3'>
+              <span className='inline-flex items-center'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-4 w-4 mr-1'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                8% from last month
+              </span>
+            </p>
+          </div>
+
+          <div className='bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500'>
+            <div className='flex justify-between items-center'>
+              <div>
+                <p className='text-gray-500 text-sm font-medium'>
+                  Active Franchises
+                </p>
+                <h3 className='text-2xl font-bold text-gray-900 mt-1'>18</h3>
+              </div>
+              <div className='bg-purple-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-6 w-6 text-purple-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z'
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className='text-red-600 text-sm font-medium mt-3'>
+              <span className='inline-flex items-center'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-4 w-4 mr-1'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                3% from last month
+              </span>
+            </p>
+          </div>
+
+          <div className='bg-white rounded-xl shadow-md p-6 border-l-4 border-amber-500'>
+            <div className='flex justify-between items-center'>
+              <div>
+                <p className='text-gray-500 text-sm font-medium'>Avg. Sales</p>
+                <h3 className='text-2xl font-bold text-gray-900 mt-1'>
+                  ₹65,420
+                </h3>
+              </div>
+              <div className='bg-amber-100 p-3 rounded-lg'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-6 w-6 text-amber-600'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                  />
+                </svg>
+              </div>
+            </div>
+            <p className='text-green-600 text-sm font-medium mt-3'>
+              <span className='inline-flex items-center'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  className='h-4 w-4 mr-1'
+                  viewBox='0 0 20 20'
+                  fill='currentColor'
+                >
+                  <path
+                    fillRule='evenodd'
+                    d='M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z'
+                    clipRule='evenodd'
+                  />
+                </svg>
+                15% from last month
+              </span>
+            </p>
+          </div>
+        </div>
+
+        {/* Filters and Controls */}
+        <div className='bg-white rounded-xl shadow-md p-6 mb-8'>
+          <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4'>
+            <div className='flex flex-wrap gap-3'>
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
+                  statusFilter === 'all'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                onClick={() => setStatusFilter('all')}
+              >
+                All Status
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center ${
+                  statusFilter === 'Approved'
+                    ? 'bg-green-100 text-green-800'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                onClick={() => setStatusFilter('Approved')}
+              >
+                <span className='w-2 h-2 rounded-full bg-green-500 mr-2'></span>
+                Approved
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center ${
+                  statusFilter === 'Pending'
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                onClick={() => setStatusFilter('Pending')}
+              >
+                <span className='w-2 h-2 rounded-full bg-amber-500 mr-2'></span>
+                Pending
+              </button>
+              <button
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-200 flex items-center ${
+                  statusFilter === 'Rejected'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                onClick={() => setStatusFilter('Rejected')}
+              >
+                <span className='w-2 h-2 rounded-full bg-red-500 mr-2'></span>
+                Rejected
+              </button>
             </div>
 
-            {/* Vendor Filter */}
-            <div>
-              <label className='block text-gray-700 text-sm font-medium mb-1'>
-                Vendor
-              </label>
-              <select
-                value={filters.vendor}
-                onChange={e =>
-                  setFilters({ ...filters, vendor: e.target.value })
-                }
-                className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              >
-                <option value='all'>All Vendors</option>
-                {vendors.map(vendor => (
-                  <option key={vendor} value={vendor}>
-                    {vendor}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <div className='flex flex-wrap gap-3'>
+              <div className='relative'>
+                <select
+                  className='appearance-none bg-white border border-gray-300 rounded-lg pl-4 pr-10 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm w-full'
+                  value={sortBy}
+                  onChange={e => setSortBy(e.target.value)}
+                >
+                  <option value='newest'>Newest First</option>
+                  <option value='oldest'>Oldest First</option>
+                  <option value='salesHigh'>Sales: High to Low</option>
+                  <option value='salesLow'>Sales: Low to High</option>
+                </select>
+                <div className='pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700'>
+                  <svg
+                    className='fill-current h-4 w-4'
+                    xmlns='http://www.w3.org/2000/svg'
+                    viewBox='0 0 20 20'
+                  >
+                    <path d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z' />
+                  </svg>
+                </div>
+              </div>
 
-            {/* Status Filter */}
-            <div>
-              <label className='block text-gray-700 text-sm font-medium mb-1'>
-                Status
-              </label>
-              <select
-                value={filters.status}
-                onChange={e =>
-                  setFilters({ ...filters, status: e.target.value })
-                }
-                className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              >
-                <option value='all'>All Status</option>
-                {statusOptions.map(status => (
-                  <option key={status.value} value={status.value}>
-                    {status.label}
-                  </option>
-                ))}
-              </select>
+              <div className='flex rounded-lg overflow-hidden border border-gray-300'>
+                <button
+                  className={`px-4 py-2 text-sm font-medium ${
+                    activeFilter === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700'
+                  }`}
+                  onClick={() => setActiveFilter('all')}
+                >
+                  All
+                </button>
+                <button
+                  className={`px-4 py-2 text-sm font-medium ${
+                    activeFilter === 'active'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-white text-gray-700'
+                  }`}
+                  onClick={() => setActiveFilter('active')}
+                >
+                  Active
+                </button>
+                <button
+                  className={`px-4 py-2 text-sm font-medium ${
+                    activeFilter === 'inactive'
+                      ? 'bg-gray-600 text-white'
+                      : 'bg-white text-gray-700'
+                  }`}
+                  onClick={() => setActiveFilter('inactive')}
+                >
+                  Inactive
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Orders List - Mobile View */}
-        <div className='md:hidden mb-6'>
-          {filteredOrders.map(order => {
-            const statusInfo = getStatusInfo(order.status)
-            return (
+        {/* Order Cards */}
+        {isSuccess && filteredData?.length === 0 ? (
+          <div className='bg-white rounded-xl shadow-md p-12 text-center'>
+            <svg
+              xmlns='http://www.w3.org/2000/svg'
+              className='h-16 w-16 mx-auto text-gray-400'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+              />
+            </svg>
+            <h3 className='text-xl font-medium text-gray-900 mt-4'>
+              No orders found
+            </h3>
+            <p className='text-gray-500 mt-2'>
+              Try adjusting your search or filter to find what you're looking
+              for.
+            </p>
+            <button
+              className='mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200'
+              onClick={() => {
+                setSearchTerm('')
+                setStatusFilter('all')
+                setActiveFilter('all')
+              }}
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+            {filteredData?.map(item => (
               <div
-                key={order.id}
-                className='bg-white rounded-xl shadow mb-4 overflow-hidden'
+                key={item._id}
+                onClick={() =>
+                  Navigate('/OrderManagementSystem', {
+                    state: {
+                      itemId: item?._id ,  // or just item if you need full object
+                      freDetail: item
+                    }
+                  })
+                }
+                className='bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-100'
               >
-                <div className='p-4 border-b border-gray-200'>
+                <div className='p-6'>
                   <div className='flex justify-between items-start'>
                     <div>
-                      <div className='font-bold text-gray-800'>{order.id}</div>
-                      <div className='text-sm text-gray-500'>
-                        {format(order.date, 'dd MMM, hh:mm a')}
+                      <div className='flex items-center'>
+                        <h3 className='text-xl font-bold text-gray-900 truncate max-w-[180px]'>
+                          {item.frenchieName}
+                        </h3>
+                        {item.isActivated ? (
+                          <span className='ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs font-medium rounded-full'>
+                            Active
+                          </span>
+                        ) : (
+                          <span className='ml-2 px-2 py-0.5 bg-gray-100 text-gray-800 text-xs font-medium rounded-full'>
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                      <p className='text-gray-500 text-sm mt-1'>
+                        ID: {item.frenchiesID}
+                      </p>
+                    </div>
+                    <div
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        item.status === 'Approved'
+                          ? 'bg-green-100 text-green-800'
+                          : item.status === 'Pending'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {item.status}
+                    </div>
+                  </div>
+
+                  <div className='mt-5 space-y-3'>
+                    <div className='flex items-center'>
+                      <div className='bg-gray-100 p-2 rounded-lg mr-3'>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          className='h-5 w-5 text-gray-600'
+                          viewBox='0 0 20 20'
+                          fill='currentColor'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className='text-xs text-gray-500'>Owner</p>
+                        <p className='font-medium'>{item.ownerName}</p>
                       </div>
                     </div>
-                    <span
-                      className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full ${statusInfo.color}`}
-                    >
-                      {statusInfo.label}
-                    </span>
+
+                    <div className='flex items-center'>
+                      <div className='bg-gray-100 p-2 rounded-lg mr-3'>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          className='h-5 w-5 text-gray-600'
+                          viewBox='0 0 20 20'
+                          fill='currentColor'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className='text-xs text-gray-500'>Location</p>
+                        <p className='font-medium'>
+                          {item.city}, {item.state}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className='flex items-center'>
+                      <div className='bg-gray-100 p-2 rounded-lg mr-3'>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          className='h-5 w-5 text-gray-600'
+                          viewBox='0 0 20 20'
+                          fill='currentColor'
+                        >
+                          <path
+                            fillRule='evenodd'
+                            d='M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z'
+                            clipRule='evenodd'
+                          />
+                        </svg>
+                      </div>
+                      <div>
+                        <p className='text-xs text-gray-500'>Trade</p>
+                        <p className='font-medium capitalize'>{item.role}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className='mt-6 pt-5 border-t border-gray-100'>
+                    <div className='flex justify-between'>
+                      <div>
+                        <p className='text-xs text-gray-500'>Orders</p>
+                        <p className='font-medium'>
+                          {item.orders?.length || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className='text-xs text-gray-500'>Sales</p>
+                        <p className='font-medium'>{item.salesCount}</p>
+                      </div>
+                      <div>
+                        <p className='text-xs text-gray-500'>Joined</p>
+                        <p className='font-medium'>
+                          {new Date(item.createdAt).toLocaleDateString('en-IN')}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div className='p-4'>
-                  <div className='grid grid-cols-2 gap-3 mb-3'>
-                    <div>
-                      <p className='text-xs text-gray-500'>Customer</p>
-                      <p className='text-sm font-medium'>
-                        {order.customer.name}
-                      </p>
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>Vendor</p>
-                      <p className='text-sm font-medium'>{order.vendor}</p>
-                    </div>
-                  </div>
-
-                  <div className='grid grid-cols-2 gap-3 mb-3'>
-                    <div>
-                      <p className='text-xs text-gray-500'>Amount</p>
-                      <p className='text-sm font-medium'>
-                        ₹{order.total.toFixed(2)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>Payment</p>
-                      <p className='text-sm font-medium'>
-                        {order.paymentMethod}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => openOrderDetails(order)}
-                    className='w-full mt-3 py-2 bg-indigo-600 text-white text-sm rounded-lg'
-                  >
+                <div className='bg-gray-50 px-6 py-3 flex justify-between items-center'>
+                  <button className='text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      className='h-4 w-4 mr-1'
+                      viewBox='0 0 20 20'
+                      fill='currentColor'
+                    >
+                      <path d='M10 12a2 2 0 100-4 2 2 0 000 4z' />
+                      <path
+                        fillRule='evenodd'
+                        d='M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z'
+                        clipRule='evenodd'
+                      />
+                    </svg>
                     View Details
+                  </button>
+                  <button className='text-gray-500 hover:text-gray-700'>
+                    <svg
+                      xmlns='http://www.w3.org/2000/svg'
+                      className='h-5 w-5'
+                      viewBox='0 0 20 20'
+                      fill='currentColor'
+                    >
+                      <path d='M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z' />
+                    </svg>
                   </button>
                 </div>
               </div>
-            )
-          })}
-
-          {filteredOrders.length === 0 && (
-            <div className='text-center py-8 bg-white rounded-xl shadow'>
-            <HiOutlineEmojiSad className="h-16 w-16 mx-auto text-gray-400" />
-
-              <h3 className='mt-4 text-lg font-medium text-gray-900'>
-                No orders found
-              </h3>
-              <p className='mt-1 text-gray-500'>
-                Try adjusting your search or filter criteria
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Orders Table - Desktop View */}
-        <div className='hidden md:block bg-white rounded-xl shadow overflow-hidden mb-6'>
-          <div className='overflow-x-auto'>
-            <table className='min-w-full divide-y divide-gray-200'>
-              <thead className='bg-gray-50'>
-                <tr>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Order ID
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Customer
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Vendor
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Date & Time
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Amount
-                  </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Status
-                  </th>
-                  <th className='px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'>
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {filteredOrders.map(order => {
-                  const statusInfo = getStatusInfo(order.status)
-                  return (
-                    <tr
-                      key={order.id}
-                      className='hover:bg-gray-50 transition-colors'
-                    >
-                      <td className='px-4 py-4 whitespace-nowrap'>
-                        <div className='text-sm font-medium text-indigo-600'>
-                          {order.id}
-                        </div>
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap'>
-                        <div className='text-sm font-medium text-gray-900'>
-                          {order.customer.name}
-                        </div>
-                        <div className='text-sm text-gray-500'>
-                          {order.customer.phone}
-                        </div>
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        {order.vendor}
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
-                        <div>{format(order.date, 'dd MMM yyyy')}</div>
-                        <div className='text-gray-400'>
-                          {format(order.date, 'hh:mm a')}
-                        </div>
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                        ₹{order.total.toFixed(2)}
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap'>
-                        <span
-                          className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.color}`}
-                        >
-                          {statusInfo.label}
-                        </span>
-                      </td>
-                      <td className='px-4 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                        <button
-                          onClick={() => openOrderDetails(order)}
-                          className='text-indigo-600 hover:text-indigo-900'
-                        >
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-
-            {filteredOrders.length === 0 && (
-              <div className='text-center py-12'>
-               <HiOutlineEmojiSad className="h-16 w-16 mx-auto text-gray-400" />
-                <h3 className='mt-4 text-lg font-medium text-gray-900'>
-                  No orders found
-                </h3>
-                <p className='mt-1 text-gray-500'>
-                  Try adjusting your search or filter criteria
-                </p>
-              </div>
-            )}
+            ))}
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Order Detail Modal */}
-      {isDetailOpen && selectedOrder && (
-        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-3 md:p-4'>
-          <div className='bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto'>
-            <div className='p-4 md:p-6'>
-              <div className='flex justify-between items-center mb-4 md:mb-6'>
-                <div>
-                  <h3 className='text-xl md:text-2xl font-bold text-gray-800'>
-                    Order #{selectedOrder.id}
-                  </h3>
-                  <p className='text-gray-600 text-sm md:text-base'>
-                    Placed on{' '}
-                    {format(selectedOrder.date, 'dd MMM yyyy, hh:mm a')}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setIsDetailOpen(false)}
-                  className='text-gray-500 hover:text-gray-700'
-                >
-                 <HiOutlineX className="h-6 w-6" />
-                </button>
-              </div>
-
-              <div className='grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6'>
-                {/* Left Column - Order Items */}
-                <div className='md:col-span-2'>
-                  <div className='bg-gray-50 rounded-xl p-4 md:p-6'>
-                    <h4 className='text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4'>
-                      Order Items
-                    </h4>
-                    <div className='space-y-3 md:space-y-4'>
-                      {selectedOrder.items.map((item, index) => (
-                        <div
-                          key={index}
-                          className='flex justify-between items-center border-b border-gray-200 pb-3 md:pb-4'
-                        >
-                          <div>
-                            <div className='font-medium'>{item.name}</div>
-                            <div className='text-sm text-gray-500'>
-                              Qty: {item.quantity}
-                            </div>
-                          </div>
-                          <div className='font-medium'>
-                            ₹{(item.price * item.quantity).toFixed(2)}
-                          </div>
-                        </div>
-                      ))}
-                      <div className='flex justify-between items-center pt-3 md:pt-4'>
-                        <div className='font-bold text-base md:text-lg'>
-                          Total
-                        </div>
-                        <div className='font-bold text-base md:text-lg'>
-                          ₹{selectedOrder.total.toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {selectedOrder.notes && (
-                      <div className='mt-4 md:mt-6'>
-                        <h4 className='text-lg md:text-xl font-bold text-gray-800 mb-2 md:mb-3'>
-                          Order Notes
-                        </h4>
-                        <div className='bg-yellow-50 border-l-4 border-yellow-400 p-3 md:p-4'>
-                          <p className='text-gray-700'>{selectedOrder.notes}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Refund Section */}
-                  {selectedOrder.status === 'refund-requested' && (
-                    <div className='mt-4 md:mt-6 bg-red-50 rounded-xl p-4 md:p-6'>
-                      <h4 className='text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4'>
-                        Refund Request
-                      </h4>
-                      <div className='mb-3 md:mb-4'>
-                        <p className='font-medium'>Reason:</p>
-                        <p className='text-gray-700'>
-                          {selectedOrder.refundReason}
-                        </p>
-                      </div>
-                      <div className='mb-3 md:mb-4'>
-                        <p className='font-medium'>Requested Amount:</p>
-                        <p className='text-gray-700'>
-                          ₹{selectedOrder.refundAmount.toFixed(2)}
-                        </p>
-                      </div>
-                      <div className='flex flex-col sm:flex-row gap-2 sm:gap-3'>
-                        <button
-                          onClick={() => {
-                            setRefundReason(selectedOrder.refundReason)
-                            setRefundAmount(selectedOrder.refundAmount)
-                            updateOrderStatus(selectedOrder.id, 'refunded')
-                          }}
-                          className='px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 text-sm'
-                        >
-                          Approve Refund
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateOrderStatus(selectedOrder.id, 'delivered')
-                          }
-                          className='px-3 py-2 sm:px-4 sm:py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 text-sm'
-                        >
-                          Reject Request
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Right Column - Order Info */}
-                <div>
-                  {/* Customer Info */}
-                  <div className='bg-gray-50 rounded-xl p-4 md:p-6 mb-4 md:mb-6'>
-                    <h4 className='text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4'>
-                      Customer Information
-                    </h4>
-                    <div className='space-y-2 md:space-y-3'>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>Name</p>
-                        <p className='font-medium text-sm md:text-base'>
-                          {selectedOrder.customer.name}
-                        </p>
-                      </div>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>
-                          Phone
-                        </p>
-                        <p className='font-medium text-sm md:text-base'>
-                          {selectedOrder.customer.phone}
-                        </p>
-                      </div>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>
-                          Email
-                        </p>
-                        <p className='font-medium text-sm md:text-base'>
-                          {selectedOrder.customer.email}
-                        </p>
-                      </div>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>
-                          Address
-                        </p>
-                        <p className='font-medium text-sm md:text-base'>
-                          {selectedOrder.customer.address}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Order Info */}
-                  <div className='bg-gray-50 rounded-xl p-4 md:p-6 mb-4 md:mb-6'>
-                    <h4 className='text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4'>
-                      Order Information
-                    </h4>
-                    <div className='space-y-2 md:space-y-3'>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>
-                          Vendor
-                        </p>
-                        <p className='font-medium text-sm md:text-base'>
-                          {selectedOrder.vendor}
-                        </p>
-                      </div>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>
-                          Payment Method
-                        </p>
-                        <p className='font-medium text-sm md:text-base'>
-                          {selectedOrder.paymentMethod}
-                        </p>
-                      </div>
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500'>
-                          Order Status
-                        </p>
-                        <div className='mt-1'>
-                          <span
-                            className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              getStatusInfo(selectedOrder.status).color
-                            }`}
-                          >
-                            {getStatusInfo(selectedOrder.status).label}
-                          </span>
-                        </div>
-                      </div>
-                      {selectedOrder.deliveryStaff && (
-                        <div>
-                          <p className='text-xs md:text-sm text-gray-500'>
-                            Delivery Staff
-                          </p>
-                          <p className='font-medium text-sm md:text-base'>
-                            {selectedOrder.deliveryStaff}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className='bg-gray-50 rounded-xl p-4 md:p-6'>
-                    <h4 className='text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-4'>
-                      Order Actions
-                    </h4>
-
-                    {/* Status Actions */}
-                    <div className='mb-4 md:mb-6'>
-                      <p className='text-xs md:text-sm text-gray-500 mb-2'>
-                        Update Status
-                      </p>
-                      <div className='grid grid-cols-2 gap-2'>
-                        <button
-                          onClick={() =>
-                            updateOrderStatus(selectedOrder.id, 'preparing')
-                          }
-                          disabled={selectedOrder.status !== 'pending'}
-                          className={`px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm rounded-lg ${
-                            selectedOrder.status !== 'pending'
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                          }`}
-                        >
-                          Preparing
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateOrderStatus(
-                              selectedOrder.id,
-                              'out-for-delivery'
-                            )
-                          }
-                          disabled={selectedOrder.status !== 'preparing'}
-                          className={`px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm rounded-lg ${
-                            selectedOrder.status !== 'preparing'
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200'
-                          }`}
-                        >
-                          Out for Delivery
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateOrderStatus(selectedOrder.id, 'delivered')
-                          }
-                          disabled={selectedOrder.status !== 'out-for-delivery'}
-                          className={`px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm rounded-lg ${
-                            selectedOrder.status !== 'out-for-delivery'
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-green-100 text-green-800 hover:bg-green-200'
-                          }`}
-                        >
-                          Delivered
-                        </button>
-                        <button
-                          onClick={() =>
-                            updateOrderStatus(selectedOrder.id, 'canceled')
-                          }
-                          disabled={
-                            selectedOrder.status === 'delivered' ||
-                            selectedOrder.status === 'canceled'
-                          }
-                          className={`px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm rounded-lg ${
-                            selectedOrder.status === 'delivered' ||
-                            selectedOrder.status === 'canceled'
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-red-100 text-red-800 hover:bg-red-200'
-                          }`}
-                        >
-                          Cancel Order
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Assign Delivery */}
-                    {selectedOrder.status === 'preparing' && (
-                      <div className='mb-4 md:mb-6'>
-                        <p className='text-xs md:text-sm text-gray-500 mb-2'>
-                          Assign Delivery Staff
-                        </p>
-                        <select
-                          value={selectedOrder.deliveryStaff || ''}
-                          onChange={e =>
-                            assignDeliveryStaff(
-                              selectedOrder.id,
-                              e.target.value
-                            )
-                          }
-                          className='w-full p-2 border border-gray-300 rounded-lg text-sm'
-                        >
-                          <option value=''>Select delivery staff</option>
-                          {deliveryStaff
-                            .filter(staff => staff.status === 'available')
-                            .map(staff => (
-                              <option key={staff.id} value={staff.name}>
-                                {staff.name}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    )}
-
-                    {/* Refund Section */}
-                    {(selectedOrder.status === 'delivered' ||
-                      selectedOrder.status === 'canceled') && (
-                      <div>
-                        <p className='text-xs md:text-sm text-gray-500 mb-2'>
-                          Process Refund
-                        </p>
-                        <div className='space-y-2'>
-                          <div>
-                            <input
-                              type='text'
-                              placeholder='Refund reason'
-                              value={refundReason}
-                              onChange={e => setRefundReason(e.target.value)}
-                              className='w-full p-2 border border-gray-300 rounded-lg text-sm'
-                            />
-                          </div>
-                          <div>
-                            <input
-                              type='number'
-                              placeholder='Refund amount'
-                              value={refundAmount}
-                              onChange={e => setRefundAmount(e.target.value)}
-                              className='w-full p-2 border border-gray-300 rounded-lg text-sm'
-                            />
-                          </div>
-                          <button
-                            onClick={processRefund}
-                            disabled={!refundReason || !refundAmount}
-                            className={`w-full py-2 rounded-lg text-sm ${
-                              !refundReason || !refundAmount
-                                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                : 'bg-purple-600 text-white hover:bg-purple-700'
-                            }`}
-                          >
-                            Process Refund
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
 
-export default OrderManagement
+export default OrderDashboard

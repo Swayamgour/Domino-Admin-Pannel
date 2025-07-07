@@ -7,18 +7,17 @@ import {
 import Sidebar from './component/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Users from './pages/Users'
-// import Reports from './pages/Reports'
 import Navbar from './component/Navbar'
-import Product from './pages/Product'
+import Product from './pages/ProductPages'
 import OrderManagement from './pages/OrderManagement'
 import VendorManagement from './pages/VendorManagement'
 import PaymentTransactions from './pages/PaymentTransactions'
 import LoginPage from './pages/LoginPage'
-import { useGetCurrentUserQuery } from './redux/api'
-import { useEffect } from 'react'
 import AuthGuard from './component/AuthGuard'
 import { Toaster } from 'react-hot-toast'
 import ProfilePage from './pages/ProfilePage'
+import OrderManagementSystem from './component/OrderManagementSystem'
+import FrencieOrder from './pages/FrencieOrder'
 
 function Layout () {
   const location = useLocation()
@@ -69,6 +68,14 @@ function Layout () {
               }
             />
             <Route
+              path='/FrencieOrder'
+              element={
+                <AuthGuard>
+                  <FrencieOrder />
+                </AuthGuard>
+              }
+            />
+            <Route
               path='/Vendor'
               element={
                 <AuthGuard>
@@ -97,6 +104,14 @@ function Layout () {
               element={
                 <AuthGuard>
                   <ProfilePage />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path='/OrderManagementSystem'
+              element={
+                <AuthGuard>
+                  <OrderManagementSystem />
                 </AuthGuard>
               }
             />

@@ -11,7 +11,7 @@ import {
 import { IoExitOutline } from 'react-icons/io5'
 import { FiSettings } from 'react-icons/fi'
 import { MdOutlineDashboard } from 'react-icons/md'
-import { useGetCurrentUserQuery } from '../redux/api'
+import { useGetCurrentUserQuery, useLogoutMutation } from '../redux/api'
 
 const Sidebar = () => {
   // Create a reusable NavItem component to handle active state
@@ -44,31 +44,52 @@ const Sidebar = () => {
   const navigate = useNavigate()
 
   const { data: CurrentUser } = useGetCurrentUserQuery()
+  const [logout, result] = useLogoutMutation()
 
   // console.log(CurrentUser)
+
+  const handelLogOut = async () => {
+    await logout()
+  }
 
   return (
     <div className='w-64 min-h-screen bg-gradient-to-b from-gray-800 to-gray-900 text-white p-5 fixed left-0 top-0  flex-col shadow-xl z-50 hidden md:block'>
       {/* Branding */}
-      <div className='mb-5 pt-2 flex items-center gap-3 border-b border-gray-700 pb-5'>
-        <div className='bg-indigo-600 p-2 rounded-lg'>
-          <MdOutlineDashboard className='text-2xl' />
+      <div className='mb-5 pt-2 flex-col justify-center items-center gap-3 border-b border-gray-700 pb-5'>
+        <div className='flex justify-center ' onClick={() => navigate('/Home')}>
+          {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
+          <img src='/image/logo1.png' className='w-[130px] h-[57px]' />
         </div>
-        <div>
+        {/* <div>
           <h1 className='text-2xl font-bold'>Admin</h1>
+          
           <p className='text-xs text-gray-400'>Dashboard v3.0</p>
-        </div>
+        </div> */}
+        <h1 className='text-2xl font-bold text-center'>
+          {CurrentUser?.data?.role === 'frenchies' ? 'Admin' : 'Super Admin'}
+        </h1>
       </div>
 
       {/* Navigation */}
       <nav className='space-y-1 flex-1 '>
         <NavItem to='/Home' icon={FaHome} label='Dashboard' />
-        <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
-        <NavItem to='/OrderManagement' icon={FaClipboardList} label='Orders' />
-        {CurrentUser?.message?.role != 'frenchies' && (
-          <NavItem to='/Vendor' icon={FaStore} label='Vendors' />
+        {CurrentUser?.data?.role === 'frenchies' && (
+          <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
         )}
-        <NavItem to='/users' icon={FaUsers} label='Users' />
+        {CurrentUser?.data?.role != 'frenchies' && (
+          <NavItem to='/Vendor' icon={FaStore} label='Frenchie' />
+        )}
+        {CurrentUser?.data?.role != 'frenchies' && (
+          <NavItem
+            to='/OrderManagement'
+            icon={FaClipboardList}
+            label='Orders'
+          />
+        )}
+        {CurrentUser?.data?.role === 'frenchies' && (
+          <NavItem to='/FrencieOrder' icon={FaClipboardList} label='Orders' />
+        )}
+        {/* <NavItem to='/users' icon={FaUsers} label='Users' /> */}
         <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />
         {/* <NavItem to="/reports" icon={FaChartBar} label="Reports" /> */}
         {/* <NavItem to="/settings" icon={FiSettings} label="Settings" /> */}
@@ -85,7 +106,7 @@ const Sidebar = () => {
           </div>
           <div>
             <p className='font-medium'>
-              {CurrentUser?.message?.role === 'frenchies'
+              {CurrentUser?.data?.role === 'frenchies'
                 ? 'Admin '
                 : 'Super Admin'}
             </p>
@@ -94,13 +115,8 @@ const Sidebar = () => {
         </div>
 
         <div
-          className={({ isActive }) =>
-            `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
-              isActive
-                ? 'bg-red-600 text-white'
-                : 'hover:bg-gray-700 text-gray-300'
-            }`
-          }
+          className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer`}
+          onClick={() => handelLogOut()}
         >
           <div className={`p-2 rounded-lg `}>
             <IoExitOutline className='text-lg' />

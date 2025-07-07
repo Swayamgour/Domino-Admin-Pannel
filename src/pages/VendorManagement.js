@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Bar } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -13,124 +13,55 @@ import {
   useCreateAdminBySuperAdminMutation,
   useGetAllVenderQuery
 } from '../redux/api'
+import VendorCard from '../component/VendorCard'
+import Loader from '../component/Loader'
 
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const VendorManagement = () => {
-  // Mock data for vendors
-  const initialVendors = [
-    {
-      id: 1,
-      name: 'Pizza Corner',
-      contact: {
-        person: 'Raj Sharma',
-        email: 'raj@pizzacorner.com',
-        phone: '+91 98765 43210'
-      },
-      city: 'Mumbai',
-      logo: 'pizza-corner.jpg',
-      status: 'approved',
-      products: ['Pizza', 'Pasta', 'Garlic Bread'],
-      sales: 125400,
-      rating: 4.7,
-      reviews: 142,
-      registrationDate: '2023-01-15'
-    },
-    {
-      id: 2,
-      name: 'Spice Garden',
-      contact: {
-        person: 'Priya Patel',
-        email: 'priya@spicegarden.com',
-        phone: '+91 87654 32109'
-      },
-      city: 'Delhi',
-      logo: 'spice-garden.jpg',
-      status: 'approved',
-      products: ['Biryani', 'Curry', 'Naan'],
-      sales: 98500,
-      rating: 4.5,
-      reviews: 98,
-      registrationDate: '2023-02-20'
-    },
-    {
-      id: 3,
-      name: 'Burger King',
-      contact: {
-        person: 'Vikram Singh',
-        email: 'vikram@burgerking.com',
-        phone: '+91 76543 21098'
-      },
-      city: 'Bangalore',
-      logo: 'burger-king.jpg',
-      status: 'approved',
-      products: ['Burgers', 'Fries', 'Shakes'],
-      sales: 75600,
-      rating: 4.3,
-      reviews: 87,
-      registrationDate: '2023-03-10'
-    },
-    {
-      id: 4,
-      name: 'Sweet Corner',
-      contact: {
-        person: 'Ananya Gupta',
-        email: 'ananya@sweetcorner.com',
-        phone: '+91 65432 10987'
-      },
-      city: 'Kolkata',
-      logo: 'sweet-corner.jpg',
-      status: 'approved',
-      products: ['Desserts', 'Cakes', 'Ice Cream'],
-      sales: 63200,
-      rating: 4.8,
-      reviews: 115,
-      registrationDate: '2023-04-05'
-    },
-    {
-      id: 5,
-      name: 'Fresh Juice Bar',
-      contact: {
-        person: 'Arjun Mehta',
-        email: 'arjun@freshjuice.com',
-        phone: '+91 54321 09876'
-      },
-      city: 'Chennai',
-      logo: '',
-      status: 'pending',
-      products: ['Juices', 'Smoothies', 'Salads'],
-      sales: 0,
-      rating: 0,
-      reviews: 0,
-      registrationDate: '2023-06-10'
-    },
-    {
-      id: 6,
-      name: 'Sushi House',
-      contact: {
-        person: 'Neha Reddy',
-        email: 'neha@sushihouse.com',
-        phone: '+91 43210 98765'
-      },
-      city: 'Hyderabad',
-      logo: 'sushi-house.jpg',
-      status: 'rejected',
-      products: ['Sushi', 'Ramen', 'Dumplings'],
-      sales: 0,
-      rating: 0,
-      reviews: 0,
-      registrationDate: '2023-05-22'
+  const [createAdminBySuperAdmin, result] = useCreateAdminBySuperAdminMutation()
+
+  const [page, setPage] = useState(1)
+  const [vendors, setVendors] = useState([])
+  const [hasMore, setHasMore] = useState(true)
+  const loaderRef = useRef()
+
+  const { data, isFetching } = useGetAllVenderQuery({ page, limit: 10 })
+
+  useEffect(() => {
+    if (data?.data?.length) {
+      setVendors(prev => [...prev, ...data.data])
+      if (data.data.length < 10) {
+        setHasMore(false)
+      }
+    } else {
+      setHasMore(false)
     }
-  ]
+  }, [data])
 
-  const [createAdminBySuperAdmin] = useCreateAdminBySuperAdminMutation()
+  // Scroll observer logic
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        const first = entries[0]
+        if (first.isIntersecting && hasMore && !isFetching) {
+          setPage(prev => prev + 1)
+        }
+      },
+      { threshold: 1 }
+    )
 
-  const { data } = useGetAllVenderQuery({ page: 1, limit: 10 })
-  console.log(data?.data)
+    const currentLoader = loaderRef.current
+    if (currentLoader) observer.observe(currentLoader)
 
-  // State management
-  const [vendors, setVendors] = useState(initialVendors)
+    return () => {
+      if (currentLoader) observer.unobserve(currentLoader)
+    }
+  }, [hasMore, isFetching])
+
+  console.log(vendors);
+
   const [editingVendor, setEditingVendor] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [filter, setFilter] = useState('all')
@@ -174,27 +105,8 @@ const VendorManagement = () => {
   }
 
   // Open vendor form
-  const handleSubmit = (vendor = null) => {
-    setEditingVendor(
-      vendor || {
-        id: null,
-        name: '',
-        contact: {
-          person: '',
-          email: '',
-          phone: ''
-        },
-        city: '',
-        logo: '',
-        status: 'pending',
-        products: [],
-        sales: 0,
-        rating: 0,
-        reviews: 0
-      }
-    )
-    setIsFormOpen(true)
-  }
+
+  console.log(editingVendor)
 
   // Handle form input changes
   const handleInputChange = e => {
@@ -217,17 +129,43 @@ const VendorManagement = () => {
     }
   }
 
+  const openVendorForm = (vendor = null) => {
+    setEditingVendor(
+      vendor || {
+        id: null,
+        name: '',
+        contact: {
+          person: '',
+          email: '',
+          phone: ''
+        },
+        city: '',
+        country: '',
+        logo: '',
+        status: 'pending',
+        products: [],
+        sales: 0,
+        rating: 0,
+        reviews: 0,
+        Address: ''
+      }
+    )
+    setIsFormOpen(true)
+  }
+
   // Submit vendor form
-  const openVendorForm = async () => {
-    // e.preventDefault()
+  const handleSubmit = async e => {
+    e.preventDefault()
 
     let body = {
-      phone: '8395621571',
-      email: 'uher98098@gmail.com',
-      address: 'kanpur uttar pradesh',
-      city: 'kanpur',
-      state: 'uttar Pradesh',
-      country: 'india'
+      name: editingVendor?.name,
+      phone: editingVendor?.contact?.phone,
+      email: editingVendor?.contact?.email,
+      address: editingVendor?.Address,
+      city: editingVendor?.city,
+      state: editingVendor?.state,
+      country: editingVendor?.country,
+      ownerName: editingVendor?.contact?.person
     }
 
     await createAdminBySuperAdmin(body)
@@ -247,8 +185,8 @@ const VendorManagement = () => {
     //   setVendors([...vendors, newVendor])
     // }
 
-    // setIsFormOpen(false)
-    // setEditingVendor(null)
+    setIsFormOpen(false)
+    setEditingVendor(null)
   }
 
   // Open vendor details
@@ -326,17 +264,21 @@ const VendorManagement = () => {
     }
   }
 
+  console.log(result)
+
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8'>
+      {result?.isLoading && <Loader />}
       <div className='max-w-7xl mx-auto'>
         {/* Header */}
         <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
           <div>
-            <h1 className='text-3xl font-bold text-gray-800'>
+            <h1 className='text-3xl md:text-4xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600'>
               Vendor Management
             </h1>
-            <p className='text-gray-600 mt-2'>
-              Manage restaurant partners and their products
+            <p className='text-gray-600 mt-2 max-w-2xl mx-auto'>
+              Manage all your vendor partners in one place with our intuitive
+              dashboard
             </p>
           </div>
           <button
@@ -370,7 +312,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Total Vendors</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {vendors.length}
+                  {data?.data?.length}
                 </p>
               </div>
             </div>
@@ -397,7 +339,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Approved Vendors</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {vendors.filter(v => v.status === 'approved').length}
+                  {data?.data?.filter(v => v.status === 'Approved')?.length}
                 </p>
               </div>
             </div>
@@ -507,7 +449,7 @@ const VendorManagement = () => {
                 <option value='all'>All Status</option>
                 <option value='approved'>Approved</option>
                 <option value='pending'>Pending</option>
-                <option value='rejected'>Rejected</option>
+                {/* <option value='rejected'>Rejected</option> */}
               </select>
             </div>
 
@@ -531,217 +473,11 @@ const VendorManagement = () => {
         </div>
 
         {/* Vendors Table */}
-        <div className='bg-white rounded-2xl shadow-xl overflow-hidden mb-8'>
+        <div>
           <div className='overflow-x-auto'>
-            <table className='min-w-full divide-y divide-gray-200'>
-              <thead className='bg-gray-50'>
-                <tr>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    Vendor
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    Contact
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    City
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    Status
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    Products
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    Sales
-                  </th>
-                  <th
-                    scope='col'
-                    className='px-6 py-4 text-right text-xs font-medium text-gray-500 uppercase tracking-wider'
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className='bg-white divide-y divide-gray-200'>
-                {filteredVendors.map(vendor => (
-                  <tr
-                    key={vendor.id}
-                    className='hover:bg-gray-50 transition-colors'
-                  >
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='flex items-center'>
-                        <div className='flex-shrink-0 h-10 w-10 bg-gray-200 rounded-lg overflow-hidden'>
-                          {vendor.logo ? (
-                            <img
-                              className='h-full w-full object-cover'
-                              src={'/image/shop.png'}
-                              alt={vendor.name}
-                            />
-                          ) : (
-                            <div className='bg-gray-200 border-2 border-dashed rounded-xl w-full h-full flex items-center justify-center'>
-                              <svg
-                                xmlns='http://www.w3.org/2000/svg'
-                                className='h-5 w-5 text-gray-400'
-                                fill='none'
-                                viewBox='0 0 24 24'
-                                stroke='currentColor'
-                              >
-                                <path
-                                  strokeLinecap='round'
-                                  strokeLinejoin='round'
-                                  strokeWidth={2}
-                                  d='M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z'
-                                />
-                              </svg>
-                            </div>
-                          )}
-                        </div>
-                        <div className='ml-4'>
-                          <div className='text-sm font-medium text-gray-900'>
-                            {vendor.name}
-                          </div>
-                          <div className='text-sm text-gray-500'>
-                            ID: {vendor.id}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <div className='text-sm text-gray-900'>
-                        {vendor.contact.person}
-                      </div>
-                      <div className='text-sm text-gray-500'>
-                        {vendor.contact.phone}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                      {vendor.city}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap'>
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          vendor.status === 'approved'
-                            ? 'bg-green-100 text-green-800'
-                            : vendor.status === 'pending'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {vendor.status.charAt(0).toUpperCase() +
-                          vendor.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
-                      <div className='flex flex-wrap gap-1 max-w-xs'>
-                        {vendor.products.slice(0, 3).map((product, idx) => (
-                          <span
-                            key={idx}
-                            className='px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded'
-                          >
-                            {product}
-                          </span>
-                        ))}
-                        {vendor.products.length > 3 && (
-                          <span className='px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded'>
-                            +{vendor.products.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
-                      ₹{vendor.sales.toLocaleString()}
-                    </td>
-                    <td className='px-6 py-4 whitespace-nowrap text-right text-sm font-medium'>
-                      <div className='flex justify-end space-x-2'>
-                        <button
-                          onClick={() => openVendorDetails(vendor)}
-                          className='text-indigo-600 hover:text-indigo-900'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-5 w-5'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
-                            />
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => openVendorForm(vendor)}
-                          className='text-blue-600 hover:text-blue-900'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-5 w-5'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
-                            />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => deleteVendor(vendor.id)}
-                          className='text-red-600 hover:text-red-900'
-                        >
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-5 w-5'
-                            fill='none'
-                            viewBox='0 0 24 24'
-                            stroke='currentColor'
-                          >
-                            <path
-                              strokeLinecap='round'
-                              strokeLinejoin='round'
-                              strokeWidth={2}
-                              d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <VendorCard data={data} />
 
-            {filteredVendors.length === 0 && (
+            {data?.data?.length === 0 && (
               <div className='text-center py-12'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
@@ -765,19 +501,6 @@ const VendorManagement = () => {
                 </p>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Sales Chart */}
-        <div
-          id='salesChart'
-          className='bg-white rounded-2xl shadow-xl p-6 mb-8'
-        >
-          <h2 className='text-xl font-bold text-gray-800 mb-6'>
-            Vendor Sales Performance
-          </h2>
-          <div className='h-80'>
-            <Bar data={salesChartData} options={salesChartOptions} />
           </div>
         </div>
       </div>
@@ -827,7 +550,7 @@ const VendorManagement = () => {
                     </h4>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                       <div>
-                        <p className='text-sm text-gray-500'>Contact Person</p>
+                        <p className='text-sm text-gray-500'>Contact name</p>
                         <p className='font-medium'>
                           {selectedVendor.contact.person}
                         </p>
@@ -1129,7 +852,7 @@ const VendorManagement = () => {
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                   <div>
                     <label className='block text-gray-700 mb-2'>
-                      Vendor Name
+                      Shop Name
                     </label>
                     <input
                       type='text'
@@ -1142,20 +865,8 @@ const VendorManagement = () => {
                   </div>
 
                   <div>
-                    <label className='block text-gray-700 mb-2'>City</label>
-                    <input
-                      type='text'
-                      name='city'
-                      value={editingVendor.city}
-                      onChange={handleInputChange}
-                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                      required
-                    />
-                  </div>
-
-                  <div>
                     <label className='block text-gray-700 mb-2'>
-                      Contact Person
+                      Owner name
                     </label>
                     <input
                       type='text'
@@ -1186,9 +897,35 @@ const VendorManagement = () => {
                       Contact Phone
                     </label>
                     <input
-                      type='text'
+                      type='tel'
                       name='contact.phone'
                       value={editingVendor.contact.phone}
+                      onChange={e => {
+                        const onlyNums = e.target.value.replace(/\D/g, '') // Remove non-digits
+                        if (onlyNums.length <= 10) {
+                          handleInputChange({
+                            target: {
+                              name: 'contact.phone',
+                              value: onlyNums
+                            }
+                          })
+                        }
+                      }}
+                      inputMode='numeric'
+                      maxLength={10}
+                      pattern='^\d{10}$'
+                      title='Enter a valid 10-digit phone number'
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>Address</label>
+                    <input
+                      type='text'
+                      name='Address'
+                      value={editingVendor.Address}
                       onChange={handleInputChange}
                       className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                       required
@@ -1196,32 +933,61 @@ const VendorManagement = () => {
                   </div>
 
                   <div>
-                    <label className='block text-gray-700 mb-2'>Logo URL</label>
+                    <label className='block text-gray-700 mb-2'>
+                      City <span className='text-gray-400'>(Optional)</span>
+                    </label>
                     <input
                       type='text'
-                      name='logo'
-                      value={editingVendor.logo}
+                      name='city'
+                      value={editingVendor.city}
                       onChange={handleInputChange}
                       className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                      placeholder='https://example.com/logo.jpg'
                     />
                   </div>
 
                   <div>
-                    <label className='block text-gray-700 mb-2'>Status</label>
+                    <label className='block text-gray-700 mb-2'>State</label>
+                    <input
+                      type='text'
+                      name='state'
+                      value={editingVendor.state}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Country <span className='text-gray-400'>(Optional)</span>
+                    </label>
                     <select
-                      name='status'
-                      value={editingVendor.status}
+                      name='country'
+                      value={editingVendor.country}
                       onChange={handleInputChange}
                       className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                     >
-                      <option value='approved'>Approved</option>
-                      <option value='pending'>Pending</option>
-                      <option value='rejected'>Rejected</option>
+                      <option value=''>Select Country</option>
+                      <option value='India'>India</option>
+                      <option value='United States'>United States</option>
+                      <option value='Canada'>Canada</option>
+                      <option value='United Kingdom'>United Kingdom</option>
+                      <option value='Australia'>Australia</option>
+                      <option value='Germany'>Germany</option>
+                      <option value='France'>France</option>
+                      <option value='Japan'>Japan</option>
+                      <option value='China'>China</option>
+                      <option value='Brazil'>Brazil</option>
+                      <option value='South Africa'>South Africa</option>
+                      <option value='UAE'>UAE</option>
+                      <option value='Singapore'>Singapore</option>
+                      <option value='Russia'>Russia</option>
+                      <option value='Mexico'>Mexico</option>
                     </select>
                   </div>
                 </div>
 
+                {/* Footer buttons */}
                 <div className='mt-8 flex justify-end space-x-4'>
                   <button
                     type='button'
@@ -1234,7 +1000,11 @@ const VendorManagement = () => {
                     type='submit'
                     className='px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all'
                   >
-                    {editingVendor.id ? 'Update Vendor' : 'Add Vendor'}
+                    {result?.isLoading
+                      ? 'Loading...'
+                      : editingVendor.id
+                      ? 'Update Vendor'
+                      : 'Add Vendor'}
                   </button>
                 </div>
               </form>

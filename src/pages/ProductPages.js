@@ -9,21 +9,17 @@ import {
 import AddCategoryDialog from '../component/AddCategory'
 import { HiOutlineEmojiHappy } from 'react-icons/hi'
 // import { HiOutlineEmojiHappy } from 'react-icons/hi';
-import { HiX } from 'react-icons/hi';
+import { HiX } from 'react-icons/hi'
 // import { HiX } from 'react-icons/hi'; // Heroicons (solid/outline)
-
-
-
 
 // import toast from 'react-hot-toast';
 import { toast } from 'react-hot-toast'
 // import 'react-toastify/dist/ReactToastify.css';
 import { HiOutlineMenu } from 'react-icons/hi'
 import { HiOutlineSearch } from 'react-icons/hi'
+import Loader from '../component/Loader'
 
-
-
-const ProductManagement = () => {
+const ProductPages = () => {
   // Mock data for products
   const initialProducts = [
     {
@@ -274,8 +270,7 @@ const ProductManagement = () => {
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-3 md:p-6'>
-     
-
+      {result?.isLoading && <Loader />}
       <AddCategoryDialog
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
@@ -298,7 +293,6 @@ const ProductManagement = () => {
             className='p-2 rounded-lg bg-indigo-600 text-white'
           >
             <HiOutlineMenu size={24} />
-
           </button>
         </div>
 
@@ -335,7 +329,7 @@ const ProductManagement = () => {
                   className='w-full p-2 border border-gray-300 rounded-lg text-sm'
                 >
                   <option value='all'>All Categories</option>
-                  {data?.message?.map(category => (
+                  {data?.data?.map(category => (
                     <option key={category} value={category?.name}>
                       {category?.name}
                     </option>
@@ -417,7 +411,7 @@ const ProductManagement = () => {
                   onChange={e => setSearchTerm(e.target.value)}
                   className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 />
-               <HiOutlineSearch  size={24} />
+                <HiOutlineSearch size={24} />
               </div>
             </div>
 
@@ -485,7 +479,7 @@ const ProductManagement = () => {
 
         {/* Products List - Mobile View */}
         <div className='md:hidden mb-6'>
-          {Product?.message?.map(product => (
+          {Product?.data?.map(product => (
             <div
               key={product.id}
               className='bg-white rounded-xl shadow mb-4 overflow-hidden'
@@ -556,7 +550,7 @@ const ProductManagement = () => {
 
           {filteredProducts.length === 0 && (
             <div className='text-center py-8 bg-white rounded-xl shadow'>
-             <HiOutlineEmojiHappy className="h-16 w-16 mx-auto text-gray-400" />
+              <HiOutlineEmojiHappy className='h-16 w-16 mx-auto text-gray-400' />
 
               <h3 className='mt-4 text-lg font-medium text-gray-900'>
                 No products found
@@ -598,7 +592,7 @@ const ProductManagement = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {Product?.message?.map(product => (
+                {Product?.data?.map(product => (
                   <tr
                     key={product._id}
                     className='hover:bg-gray-50 transition-colors'
@@ -675,7 +669,7 @@ const ProductManagement = () => {
 
             {filteredProducts.length === 0 && (
               <div className='text-center py-12'>
-               <HiOutlineEmojiHappy className="h-16 w-16 mx-auto text-gray-400" />
+                <HiOutlineEmojiHappy className='h-16 w-16 mx-auto text-gray-400' />
 
                 <h3 className='mt-4 text-lg font-medium text-gray-900'>
                   No products found
@@ -689,48 +683,6 @@ const ProductManagement = () => {
         </div>
 
         {/* Categories Management */}
-        <div className='bg-white rounded-xl shadow p-4 md:p-6'>
-          <div className='flex flex-col md:flex-row md:justify-between md:items-center mb-4 md:mb-6'>
-            <h2 className='text-lg md:text-xl font-bold text-gray-800 mb-3 md:mb-0'>
-              Food Categories
-            </h2>
-            <div className='flex'>
-              <input
-                type='text'
-                placeholder='Add new category...'
-                value={newCategory}
-                onChange={e => setNewCategory(e.target.value)}
-                className='flex-grow px-3 py-2 border border-gray-300 rounded-l-lg md:rounded-l-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm'
-              />
-              <button
-                onClick={addCategory}
-                className='px-4 py-2 bg-indigo-600 text-white font-medium rounded-r-lg md:rounded-r-xl hover:bg-indigo-700 transition-colors text-sm'
-              >
-                Add
-              </button>
-            </div>
-          </div>
-
-          <div className='flex flex-wrap gap-2 md:gap-3'>
-            {categories.map(category => (
-              <div
-                key={category}
-                className='flex items-center bg-purple-50 rounded-lg md:rounded-xl px-3 py-1 md:px-4 md:py-2'
-              >
-                <span className='text-purple-800 font-medium text-sm md:text-base'>
-                  {category}
-                </span>
-                <button
-                  onClick={() => removeCategory(category)}
-                  className='ml-1 md:ml-2 text-purple-500 hover:text-purple-700'
-                >
-                 <HiX className="h-3 w-3 md:h-4 md:w-4" />
-
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Product Form Modal */}
@@ -746,8 +698,7 @@ const ProductManagement = () => {
                   onClick={() => setIsFormOpen(false)}
                   className='text-gray-500 hover:text-gray-700'
                 >
-                 <HiX className="h-6 w-6" />
-
+                  <HiX className='h-6 w-6' />
                 </button>
               </div>
 
@@ -805,7 +756,7 @@ const ProductManagement = () => {
                       required
                     >
                       <option value=''>Select a category</option>
-                      {data?.message?.map(category => (
+                      {data?.data?.map(category => (
                         <option key={category?._id} value={category?._id}>
                           {category?.name}
                         </option>
@@ -900,4 +851,4 @@ const ProductManagement = () => {
   )
 }
 
-export default ProductManagement
+export default ProductPages

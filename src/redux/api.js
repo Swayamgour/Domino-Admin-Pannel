@@ -5,7 +5,6 @@ export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({
     baseUrl: 'https://backend-food-delivery-app-ffzz.onrender.com/api/',
-    // credentials: 'include', // ✅ Required for sending cookies
     prepareHeaders: headers => {
       const token = Cookies.get('accessToken') // or localStorage.getItem('accessToken')
       if (token) {
@@ -23,7 +22,15 @@ export const pokemonApi = createApi({
 
     getAdminById: build.query({
       query: id => `v1/users/super-admin/admin/${id}`,
-      providesTags: (result, error, id) => [{ type: 'Admin', id }]
+      providesTags: ['Admin']
+    }),
+    getOrderById: build.query({
+      query: id => `v1/order/get-order-by-superAdmin/${id}`,
+      providesTags: ['Admin']
+    }),
+    getOrderByfrenchie: build.query({
+      query: id => `v1/order/fetch-order-by-frenchies`,
+      providesTags: ['Admin']
     }),
     getCurrentUser: build.query({
       query: id => `v1/users/getcurrentuserdetails`,
@@ -35,6 +42,7 @@ export const pokemonApi = createApi({
         url: 'v1/users/login',
         method: 'POST',
         body: newAdmin
+        // credentials: 'include' // ✅ Required for sending cookies
       }),
       invalidatesTags: ['Admin']
     }),
@@ -50,7 +58,7 @@ export const pokemonApi = createApi({
     getAllVender: build.query({
       query: ({ page = 1, limit = 10 }) =>
         `v1/users/super-admin/getallfrenchies?page=${page}&limit=${limit}`,
-      providesTags: (result, error, id) => [{ type: 'Admin', id }]
+      providesTags: ['Admin']
     }),
 
     createAdminBySuperAdmin: build.mutation({
@@ -58,6 +66,15 @@ export const pokemonApi = createApi({
         url: 'v1/users/super-admin/create-admin',
         method: 'POST',
         body: newAdmin
+      }),
+      invalidatesTags: ['Admin']
+    }),
+
+    activeFrenchies: build.mutation({
+      query: body => ({
+        url: `v1/users/super-admin/manage-frenchies`,
+        method: 'PUT',
+        body
       }),
       invalidatesTags: ['Admin']
     }),
@@ -122,14 +139,22 @@ export const pokemonApi = createApi({
       }),
       invalidatesTags: ['Category']
     }),
-     updatePassword: build.mutation({
+    updatePassword: build.mutation({
       query: ({ id, ...data }) => ({
         url: `v1/users/update-password`,
         method: 'PATCH',
         body: data
       }),
-      invalidatesTags:  [ 'Admin' ]
+      invalidatesTags: ['Admin']
     }),
+    updateFrenchie: build.mutation({
+      query: ({ id, ...data }) => ({
+        url: `v1/users/frenchies/update-details-frenchie`,
+        method: 'PATCH',
+        body: data
+      }),
+      invalidatesTags: ['Admin']
+    })
   })
 })
 
@@ -149,5 +174,9 @@ export const {
   useDeleteProductMutation,
   useUpdateProductMutation,
   useLogoutMutation,
-  useUpdatePasswordMutation
+  useUpdatePasswordMutation,
+  useUpdateFrenchieMutation,
+  useActiveFrenchiesMutation,
+  useGetOrderByIdQuery,
+  useGetOrderByfrenchieQuery
 } = pokemonApi

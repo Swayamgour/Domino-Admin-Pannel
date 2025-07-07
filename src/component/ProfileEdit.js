@@ -1,13 +1,15 @@
 import React, { useState } from 'react'
-import { useGetCurrentUserQuery } from '../redux/api'
+import { useGetCurrentUserQuery, useUpdateFrenchieMutation } from '../redux/api'
 import { HiOutlineMail, HiOutlinePhone, HiOutlineGlobe } from 'react-icons/hi'
 
 function ProfileEdit () {
   const { data: userData } = useGetCurrentUserQuery()
+  const [updateFre, result] = useUpdateFrenchieMutation()
+
   const [isEditing, setIsEditing] = useState(false)
 
   const [profileData, setProfileData] = useState({
-    ...userData?.message,
+    ...userData.data,
     profileImage:
       'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'
   })
@@ -18,8 +20,6 @@ function ProfileEdit () {
     newPassword: '',
     confirmPassword: ''
   })
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState('')
 
   const handleInputChange = e => {
     const { name, value } = e.target
@@ -30,7 +30,56 @@ function ProfileEdit () {
     e.preventDefault()
     setIsEditing(false)
     console.log('Updated profile:', profileData)
+    let body = {
+      phone: '6392601573',
+      latitude: '26.39531217885032',
+      longitude: '80.40430577566494',
+      password: '12345'
+    }
   }
+
+  const getCurrentLocation = () => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject('Geolocation is not supported by your browser')
+      } else {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const { latitude, longitude } = position.coords
+            resolve({ lat: latitude, lng: longitude })
+          },
+          error => {
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                reject('User denied the request for Geolocation.')
+                break
+              case error.POSITION_UNAVAILABLE:
+                reject('Location information is unavailable.')
+                break
+              case error.TIMEOUT:
+                reject('The request to get user location timed out.')
+                break
+              default:
+                reject('An unknown error occurred.')
+                break
+            }
+          }
+        )
+      }
+    })
+  }
+
+  const fetchLocation = async () => {
+    try {
+      const location = await getCurrentLocation()
+      console.log('User location:', location)
+      // Use location.lat and location.lng here
+    } catch (err) {
+      console.error('Error getting location:', err)
+    }
+  }
+
+  console.log(fetchLocation())
 
   return (
     <>
@@ -46,6 +95,18 @@ function ProfileEdit () {
                   type='text'
                   name='frenchieName'
                   value={profileData.frenchieName}
+                  onChange={handleInputChange}
+                  className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm'
+                />
+              </div>
+              <div>
+                <label className='block text-gray-700 font-medium mb-2 text-sm'>
+                  Owner Name
+                </label>
+                <input
+                  type='text'
+                  name='OwnerName'
+                  value={profileData.OwnerName}
                   onChange={handleInputChange}
                   className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm'
                 />
@@ -96,7 +157,8 @@ function ProfileEdit () {
                     name='phone'
                     value={profileData.phone}
                     onChange={handleInputChange}
-                    className='w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm'
+                    className='w-full pl-10 p-3 border border-gray-300 rounded-lg bg-gray-100 focus:border-transparent text-sm'
+                    disabled
                   />
                 </div>
               </div>
@@ -128,20 +190,8 @@ function ProfileEdit () {
                   name='city'
                   value={profileData.city}
                   onChange={handleInputChange}
-                  className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm'
-                />
-              </div>
-
-              <div>
-                <label className='block text-gray-700 font-medium mb-2 text-sm'>
-                  State
-                </label>
-                <input
-                  type='text'
-                  name='state'
-                  value={profileData.state}
-                  onChange={handleInputChange}
-                  className='w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm'
+                  className='w-full p-3 border border-gray-300 rounded-lg bg-gray-100 focus:border-transparent text-sm'
+                  disabled
                 />
               </div>
             </div>
