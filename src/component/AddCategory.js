@@ -4,7 +4,7 @@ import { useCreateCategoryMutation } from '../redux/api'
 const AddCategoryDialog = ({ isOpen, onClose, onSubmit }) => {
   const [categoryName, setCategoryName] = React.useState('')
   const [image, setImage] = React.useState(null)
-  const [createCategory, result] = useCreateCategoryMutation()
+  const [createCategory] = useCreateCategoryMutation()
 
   const handleSubmit = e => {
     e.preventDefault()

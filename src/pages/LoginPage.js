@@ -1,21 +1,21 @@
 import React, { useEffect, useState } from 'react'
-import { FaApple, FaGoogle } from 'react-icons/fa'
+// import { FaApple, FaGoogle } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import {
   useAllLoginMutation,
-  useCreateAdminBySuperAdminMutation,
+  // useCreateAdminBySuperAdminMutation,
   useGetCurrentUserQuery
 } from '../redux/api'
 import Cookies from 'js-cookie'
 
 const LoginPage = () => {
-  const [upDatePass, setUpDatePass] = useState(true)
+  const [upDatePass] = useState(true)
   const [mobile, setMobile] = useState('')
   const [password, setPassword] = useState('')
 
   const navigate = useNavigate()
   const [loginForAll, result] = useAllLoginMutation()
-  const [logAdmin] = useCreateAdminBySuperAdminMutation()
+  // const [logAdmin] = useCreateAdminBySuperAdminMutation()
 
   // const handelClick = async e => {
   //   e.preventDefault()
@@ -35,10 +35,10 @@ const LoginPage = () => {
       password: password
     }
 
-    const response = await loginForAll(body)
+    await loginForAll(body)
   }
 
-  console.log(result?.data?.message?.accessToken  , result)
+  // console.log(result?.data?.message?.accessToken  , result)
 
   useEffect(() => {
     if (result?.data?.data?.accessToken) {
@@ -47,7 +47,7 @@ const LoginPage = () => {
       })
       navigate('/Home')
     }
-  }, [result.isSuccess])
+  }, [result?.isSuccess, navigate, result?.data?.data?.accessToken])
 
   const handelClickTwo = e => {
     e.preventDefault()
@@ -62,7 +62,7 @@ const LoginPage = () => {
     if (isSuccess && data?.success) {
       navigate('/Home')
     }
-  }, [isSuccess, data])
+  }, [isSuccess, data , navigate])
 
   if (isLoading)
     return (

@@ -1,17 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import {
-  HiCamera,
-  HiLocationMarker,
-  HiLockClosed,
-  HiOutlinePencil,
-  HiOutlineMail,
-  HiOutlinePhone,
-  HiOutlineGlobe,
-  HiOutlineCalendar,
-  HiOutlineKey
-} from 'react-icons/hi'
+import { HiLockClosed, HiOutlineKey } from 'react-icons/hi'
 import { RxCross2 } from 'react-icons/rx'
-import { useGetCurrentUserQuery, useUpdatePasswordMutation } from '../redux/api'
+import { useUpdatePasswordMutation } from '../redux/api'
 
 function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
   const [passwordData, setPasswordData] = useState({
@@ -20,21 +10,21 @@ function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
     confirmPassword: ''
   })
 
-  const { data: userData } = useGetCurrentUserQuery()
+  // const { data: userData } = useGetCurrentUserQuery()
 
   const [updatePass, result] = useUpdatePasswordMutation()
 
-  console.log(result)
+  // console.log(result)
 
-  const [profileData, setProfileData] = useState({
-    ...userData?.message,
-    profileImage:
-      'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'
-  })
+  // const [profileData] = useState({
+  //   ...userData?.message,
+  //   profileImage:
+  //     'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'
+  // })
 
   const [passwordError, setPasswordError] = useState('')
   const [passwordSuccess, setPasswordSuccess] = useState('')
-  const [isEditing, setIsEditing] = useState(false)
+  // const [ setIsEditing] = useState(false)
 
   useEffect(() => {
     if (result.isSuccess) {
@@ -52,11 +42,11 @@ function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
     if (passwordError) setPasswordError('')
   }
 
-  const handleSubmit = e => {
-    e.preventDefault()
-    setIsEditing(false)
-    console.log('Updated profile:', profileData)
-  }
+  // const handleSubmit = e => {
+  //   e.preventDefault()
+  //   setIsEditing(false)
+  //   console.log('Updated profile:', profileData)
+  // }
 
   const handlePasswordSubmit = async e => {
     e.preventDefault()

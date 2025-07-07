@@ -2,14 +2,7 @@ import * as React from 'react'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import Button from '@mui/material/Button'
-import List from '@mui/material/List'
-import Divider from '@mui/material/Divider'
-import ListItem from '@mui/material/ListItem'
-import ListItemButton from '@mui/material/ListItemButton'
-import ListItemIcon from '@mui/material/ListItemIcon'
-import ListItemText from '@mui/material/ListItemText'
-import InboxIcon from '@mui/icons-material/MoveToInbox'
-import MailIcon from '@mui/icons-material/Mail'
+
 import { TiThMenu } from 'react-icons/ti'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { MdOutlineDashboard } from 'react-icons/md'
@@ -17,10 +10,10 @@ import {
   FaHome,
   FaBoxOpen,
   FaClipboardList,
-  FaUsers,
+  // FaUsers,
   FaMoneyCheckAlt,
   FaStore,
-  FaChartBar
+  // FaChartBar
 } from 'react-icons/fa'
 import { IoExitOutline } from 'react-icons/io5'
 import { useGetCurrentUserQuery, useLogoutMutation } from '../redux/api'
@@ -31,7 +24,7 @@ export default function AnchorTemporaryDrawer () {
   const navigate = useNavigate()
 
   const { data: CurrentUser } = useGetCurrentUserQuery()
-  const [logout, result] = useLogoutMutation()
+  const [logout] = useLogoutMutation()
 
   const toggleDrawer = open => event => {
     if (
@@ -101,7 +94,7 @@ export default function AnchorTemporaryDrawer () {
           )}
 
           {/* <NavItem to="/Vendor" icon={FaStore} label="Vendors" /> */}
-          {CurrentUser?.data?.role != 'frenchies' && (
+          {CurrentUser?.data?.role !== 'frenchies' && (
             <NavItem to='/Vendor' icon={FaStore} label='Frenchie' />
           )}
 

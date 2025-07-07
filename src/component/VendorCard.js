@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, {  useState } from 'react'
 import Switch from '@mui/material/Switch'
 import { useActiveFrenchiesMutation } from '../redux/api'
 import CircularProgress from '@mui/material/CircularProgress'
@@ -6,8 +6,8 @@ import CircularProgress from '@mui/material/CircularProgress'
 const VendorCard = ({ data }) => {
   const vendors = data?.data || []
 
-  const [open, setOpen] = useState(false)
-  const [checked, setChecked] = React.useState(true)
+//   const [open, setOpen] = useState(false)
+//   const [checked, setChecked] = React.useState(true)
   const [updateAdmin, result] = useActiveFrenchiesMutation()
   const [loadingId, setLoadingId] = useState(null)
 

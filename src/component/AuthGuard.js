@@ -13,7 +13,7 @@ if (token) {
 }
 
 const AuthGuard = ({ children }) => {
-  const { data, isLoading, isError, isSuccess } = useGetCurrentUserQuery(token)
+  const { data, isLoading, isError } = useGetCurrentUserQuery(token)
   // console.log(data.cookie)
   if (isLoading) return <div>Loading...</div>
 

@@ -3,14 +3,14 @@ import {
   FaHome,
   FaBoxOpen,
   FaClipboardList,
-  FaUsers,
+  // FaUsers,
   FaMoneyCheckAlt,
   FaStore,
-  FaChartBar
+  // FaChartBar
 } from 'react-icons/fa'
 import { IoExitOutline } from 'react-icons/io5'
-import { FiSettings } from 'react-icons/fi'
-import { MdOutlineDashboard } from 'react-icons/md'
+// import { FiSettings } from 'react-icons/fi'
+// import { MdOutlineDashboard } from 'react-icons/md'
 import { useGetCurrentUserQuery, useLogoutMutation } from '../redux/api'
 
 const Sidebar = () => {
@@ -44,7 +44,7 @@ const Sidebar = () => {
   const navigate = useNavigate()
 
   const { data: CurrentUser } = useGetCurrentUserQuery()
-  const [logout, result] = useLogoutMutation()
+  const [logout] = useLogoutMutation()
 
   // console.log(CurrentUser)
 
@@ -58,7 +58,7 @@ const Sidebar = () => {
       <div className='mb-5 pt-2 flex-col justify-center items-center gap-3 border-b border-gray-700 pb-5'>
         <div className='flex justify-center ' onClick={() => navigate('/Home')}>
           {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
-          <img src='/image/logo1.png' className='w-[130px] h-[57px]' />
+          <img src='/image/logo1.png' className='w-[130px] h-[57px]' alt='of logo' />
         </div>
         {/* <div>
           <h1 className='text-2xl font-bold'>Admin</h1>
@@ -76,10 +76,10 @@ const Sidebar = () => {
         {CurrentUser?.data?.role === 'frenchies' && (
           <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
         )}
-        {CurrentUser?.data?.role != 'frenchies' && (
+        {CurrentUser?.data?.role !== 'frenchies' && (
           <NavItem to='/Vendor' icon={FaStore} label='Frenchie' />
         )}
-        {CurrentUser?.data?.role != 'frenchies' && (
+        {CurrentUser?.data?.role !== 'frenchies' && (
           <NavItem
             to='/OrderManagement'
             icon={FaClipboardList}

@@ -102,7 +102,7 @@ const ProductPages = () => {
   const [editingProduct, setEditingProduct] = useState(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isFormOpen, setIsFormOpen] = useState(false)
-  const [categories, setCategories] = useState([
+  const [categories] = useState([
     'Pizza',
     'Burger',
     'Rice',
@@ -110,7 +110,7 @@ const ProductPages = () => {
     'Dessert',
     'Beverage'
   ])
-  const [newCategory, setNewCategory] = useState('')
+  //   const [newCategory, setNewCategory] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({
     category: 'all',
@@ -175,7 +175,7 @@ const ProductPages = () => {
     )
   }
 
-  console.log(editingProduct, editingProduct?.category?._id)
+  //   console.log(editingProduct, editingProduct?.category?._id)
 
   const handelDeleteProduct = async id => {
     await deleteProd(id)
@@ -223,17 +223,17 @@ const ProductPages = () => {
   }
 
   // Add a new category
-  const addCategory = () => {
-    if (newCategory.trim() && !categories.includes(newCategory)) {
-      setCategories([...categories, newCategory])
-      setNewCategory('')
-    }
-  }
+  //   const addCategory = () => {
+  //     if (newCategory.trim() && !categories.includes(newCategory)) {
+  //       setCategories([...categories, newCategory])
+  //       setNewCategory('')
+  //     }
+  //   }
 
   // Remove a category
-  const removeCategory = category => {
-    setCategories(categories.filter(c => c !== category))
-  }
+  //   const removeCategory = category => {
+  //     setCategories(categories.filter(c => c !== category))
+  //   }
 
   // Open form to add new product
   const openAddForm = () => {
@@ -247,7 +247,7 @@ const ProductPages = () => {
       image: '',
       stock: 0,
       status: 'in-stock',
-      image: null
+    //   image: null
     })
     setIsFormOpen(true)
   }
@@ -258,7 +258,7 @@ const ProductPages = () => {
     setIsFormOpen(true)
   }
 
-  console.log(editingProduct)
+  //   console.log(editingProduct)
 
   const handleImageChange = e => {
     const file = e.target.files[0]
@@ -816,7 +816,7 @@ const ProductPages = () => {
                           value='out-of-stock'
                           checked={
                             editingProduct._id &&
-                            editingProduct.stock != 'In Stock'
+                            editingProduct.stock !== 'In Stock'
                           }
                           onChange={handleInputChange}
                           className='h-4 w-4 text-indigo-600 focus:ring-indigo-500'
@@ -835,7 +835,7 @@ const ProductPages = () => {
                   >
                     Cancel
                   </button>
-                  
+
                   <button
                     type='submit'
                     className='px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-medium rounded-lg shadow hover:shadow-md transition-all text-sm md:text-base'

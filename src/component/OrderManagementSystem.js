@@ -17,10 +17,10 @@ import {
   FaCheck,
   FaClock,
   FaChevronDown,
-  FaSearch,
+//   FaSearch,
   FaCog,
   FaBell,
-  FaUserCircle
+//   FaUserCircle
 } from 'react-icons/fa'
 import { useLocation } from 'react-router-dom'
 import { useGetOrderByIdQuery } from '../redux/api'

@@ -12,7 +12,7 @@
 // export default FrencieOrder
 
 // src/components/OrderDashboard.js
-import React, { useState } from 'react'
+import React from 'react'
 import OrderCard from '../component/OrderCard'
 import StatsCard from '../component/StatsCard'
 import { useGetOrderByfrenchieQuery } from '../redux/api'

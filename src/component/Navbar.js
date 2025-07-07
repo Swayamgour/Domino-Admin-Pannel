@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import AnchorTemporaryDrawer from './AnchorTemporaryDrawer'
-import { useGetCurrentUserQuery } from '../redux/api'
+// import { useGetCurrentUserQuery } from '../redux/api'
 
 function Navbar () {
   const navigate = useNavigate()
-  const { data: CurrentUser } = useGetCurrentUserQuery()
+  // const { data: CurrentUser } = useGetCurrentUserQuery()
 
   return (
     <nav className='w-full bg-gradient-to-r from-purple-600 to-indigo-700 p-2 shadow-md fixed top-0 left-0 z-30'>
@@ -14,7 +14,7 @@ function Navbar () {
         {/* Desktop Menu */}
         <div onClick={()=>navigate('/Home')} >
           {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
-          <img src='/image/logo1.png' className='w-[130px] h-[57px]' />
+          <img src='/image/logo1.png' className='w-[130px] h-[57px]' alt='logo of dominos website' />
 
         </div>
 

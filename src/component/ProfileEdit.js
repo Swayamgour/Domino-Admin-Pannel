@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
-import { useGetCurrentUserQuery, useUpdateFrenchieMutation } from '../redux/api'
+import { useGetCurrentUserQuery } from '../redux/api'
 import { HiOutlineMail, HiOutlinePhone, HiOutlineGlobe } from 'react-icons/hi'
 
 function ProfileEdit () {
   const { data: userData } = useGetCurrentUserQuery()
-  const [updateFre, result] = useUpdateFrenchieMutation()
+  // const [updateFre, result] = useUpdateFrenchieMutation()
 
-  const [isEditing, setIsEditing] = useState(false)
+  const [ setIsEditing] = useState(false)
 
   const [profileData, setProfileData] = useState({
     ...userData.data,
@@ -15,11 +15,11 @@ function ProfileEdit () {
   })
 
   // Password update state
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  })
+  // const [passwordData, setPasswordData] = useState({
+  //   currentPassword: '',
+  //   newPassword: '',
+  //   confirmPassword: ''
+  // })
 
   const handleInputChange = e => {
     const { name, value } = e.target
@@ -29,13 +29,13 @@ function ProfileEdit () {
   const handleSubmit = e => {
     e.preventDefault()
     setIsEditing(false)
-    console.log('Updated profile:', profileData)
-    let body = {
-      phone: '6392601573',
-      latitude: '26.39531217885032',
-      longitude: '80.40430577566494',
-      password: '12345'
-    }
+    // console.log('Updated profile:', profileData)
+    // let body = {
+    //   phone: '6392601573',
+    //   latitude: '26.39531217885032',
+    //   longitude: '80.40430577566494',
+    //   password: '12345'
+    // }
   }
 
   const getCurrentLocation = () => {
