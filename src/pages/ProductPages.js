@@ -835,6 +835,7 @@ const ProductPages = () => {
                   >
                     Cancel
                   </button>
+                  
                   <button
                     type='submit'
                     className='px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-medium rounded-lg shadow hover:shadow-md transition-all text-sm md:text-base'
