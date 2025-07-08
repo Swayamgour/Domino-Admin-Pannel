@@ -53,7 +53,7 @@ const OrderDashboard = () => {
 
       setData(sortedData)
     }
-  }, [sortBy, isSuccess , initialData])
+  }, [sortBy, isSuccess ])
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8'>
@@ -69,7 +69,10 @@ const OrderDashboard = () => {
                 Manage all your orders and franchises in one place
               </p>
             </div>
+
+            
             <div className='flex items-center gap-3'>
+
               <div className='relative'>
                 <div className='absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none'>
                   <svg

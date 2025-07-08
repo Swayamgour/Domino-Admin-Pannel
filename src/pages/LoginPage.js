@@ -129,9 +129,9 @@ const LoginPage = () => {
               </form>
 
               <div className='mt-8 flex justify-between text-sm text-gray-500'>
-                <a href='#' className='hover:underline'>
+                {/* <a href='#' className='hover:underline'>
                   Terms & Conditions
-                </a>
+                </a> */}
               </div>
             </div>
           ) : (
@@ -164,9 +164,9 @@ const LoginPage = () => {
               </form>
 
               <div className='mt-8 flex justify-between text-sm text-gray-500'>
-                <a href='#' className='hover:underline'>
+                {/* <a href='#' className='hover:underline'>
                   Terms & Conditions
-                </a>
+                </a> */}
               </div>
             </div>
           )}

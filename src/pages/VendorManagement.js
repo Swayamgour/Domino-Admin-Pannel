@@ -60,7 +60,7 @@ const VendorManagement = () => {
     }
   }, [hasMore, isFetching])
 
-  console.log(vendors);
+  console.log(vendors)
 
   const [editingVendor, setEditingVendor] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
@@ -312,7 +312,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Total Vendors</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {data?.data?.length}
+                  {data?.totalDocs}
                 </p>
               </div>
             </div>
@@ -339,7 +339,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Approved Vendors</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {data?.data?.filter(v => v.status === 'Approved')?.length}
+                  {data?.totalApproved}
                 </p>
               </div>
             </div>
@@ -366,7 +366,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Pending Approval</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {vendors.filter(v => v.status === 'pending').length}
+                  {vendors.totalPending || 0}
                 </p>
               </div>
             </div>
@@ -395,7 +395,7 @@ const VendorManagement = () => {
                 <p className='text-2xl font-bold text-gray-800'>
                   ₹
                   {vendors
-                    .reduce((sum, vendor) => sum + vendor.sales, 0)
+                    .reduce((sum, vendor) => sum + vendor.salesCount, 0)
                     .toLocaleString()}
                 </p>
               </div>
