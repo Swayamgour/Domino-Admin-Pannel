@@ -18,6 +18,7 @@ import { toast } from 'react-hot-toast'
 import { HiOutlineMenu } from 'react-icons/hi'
 import { HiOutlineSearch } from 'react-icons/hi'
 import Loader from '../component/Loader'
+// import { useSelector } from 'react-redux'
 
 const ProductPages = () => {
   // Mock data for products
@@ -88,6 +89,8 @@ const ProductPages = () => {
   // console.log(resultDelete)
 
   // State management
+
+  
 
   useEffect(() => {
     if (resultDelete?.isSuccess) {
@@ -246,8 +249,8 @@ const ProductPages = () => {
       vendor: '',
       image: '',
       stock: 0,
-      status: 'in-stock',
-    //   image: null
+      status: 'in-stock'
+      //   image: null
     })
     setIsFormOpen(true)
   }

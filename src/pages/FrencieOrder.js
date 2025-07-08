@@ -16,13 +16,10 @@ import React from 'react'
 import OrderCard from '../component/OrderCard'
 import StatsCard from '../component/StatsCard'
 import { useGetOrderByfrenchieQuery } from '../redux/api'
+// import { useSelector } from 'react-redux'
 
 const FrencieOrder = () => {
   const { data } = useGetOrderByfrenchieQuery()
-
-//   console.log(data?.data);
-
-//   const [orders] = useState()
 
   const stats = [
     { title: 'Total Orders', value: 42, change: '+12%', positive: true },
@@ -30,6 +27,8 @@ const FrencieOrder = () => {
     { title: 'Revenue', value: '₹24,850', change: '+18%', positive: true },
     { title: 'Avg. Order Value', value: '₹750', change: '+5%', positive: true }
   ]
+
+
 
   return (
     <div className='container mx-auto px-4 py-8'>

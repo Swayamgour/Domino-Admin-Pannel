@@ -1,10 +1,27 @@
 import { useNavigate } from 'react-router-dom'
 import AnchorTemporaryDrawer from './AnchorTemporaryDrawer'
-// import { useGetCurrentUserQuery } from '../redux/api'
+import { useDispatch } from 'react-redux'
+import { setLocation } from '../redux/globalSlice'
+import { getUserLocation } from '../utils/getUserLocation'
+import { useEffect } from 'react'
 
 function Navbar () {
   const navigate = useNavigate()
-  // const { data: CurrentUser } = useGetCurrentUserQuery()
+
+  const dispatch = useDispatch()
+
+  const handleGetLocation = async () => {
+    try {
+      const location = await getUserLocation()
+      dispatch(setLocation(location))
+    } catch (err) {
+      console.error('Error:', err.message)
+    }
+  }
+
+  useEffect(() => {
+    handleGetLocation()
+  }, [])
 
   return (
     <nav className='w-full bg-gradient-to-r from-purple-600 to-indigo-700 p-2 shadow-md fixed top-0 left-0 z-30'>
@@ -12,10 +29,13 @@ function Navbar () {
         {/* Drawer icon (hamburger menu) */}
 
         {/* Desktop Menu */}
-        <div onClick={()=>navigate('/Home')} >
+        <div onClick={() => navigate('/Home')}>
           {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
-          <img src='/image/logo1.png' className='w-[130px] h-[57px]' alt='logo of dominos website' />
-
+          <img
+            src='/image/logo1.png'
+            className='w-[130px] h-[57px]'
+            alt='logo of dominos website'
+          />
         </div>
 
         {/* <div

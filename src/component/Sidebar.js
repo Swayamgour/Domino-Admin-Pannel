@@ -52,10 +52,11 @@ const Sidebar = () => {
   const handelLogOut = async () => {
     try {
       Cookies.remove('accessToken') // Clear token
-      navigate('/') // Redirect to home
+
       setTimeout(() => {
         window.location.reload() // Reload after navigation
       }, 100)
+      navigate('/') // Redirect to home
     } catch (error) {
       console.error('Logout failed:', error)
     }

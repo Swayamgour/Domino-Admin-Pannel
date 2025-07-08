@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import { HiLockClosed, HiOutlineKey } from 'react-icons/hi'
 import { RxCross2 } from 'react-icons/rx'
 import { useUpdatePasswordMutation } from '../redux/api'
+import Loader from './Loader'
+import toast from 'react-hot-toast'
 
-function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
+function ChangePassword ({ passwordForm, setPasswordForm }) {
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
@@ -28,7 +30,9 @@ function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
 
   useEffect(() => {
     if (result.isSuccess) {
+      setPasswordForm(false)
       setPasswordSuccess('Password updated successfully!')
+      toast.success('Password updated successfully!')
     } else {
       if (result.isError) {
         setPasswordError('Old Password is not matched')
@@ -91,8 +95,9 @@ function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
 
   return (
     <>
-      {showPasswordForm && (
+      {passwordForm && (
         <div className='fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-end'>
+          {result?.isLoading && <Loader />}
           <div className='bg-white rounded-t-2xl shadow-lg p-6 w-full max-w-lg transition-all transform duration-300 animate-slide-up'>
             <div className='bg-white rounded-2xl shadow-lg p-6'>
               <div className='flex justify-between items-center'>
@@ -103,7 +108,7 @@ function ChangePassword ({ showPasswordForm, setShowPasswordForm }) {
 
                 <div
                   onClick={() => {
-                    setShowPasswordForm(false)
+                    setPasswordForm(false)
                     setPasswordError('')
                   }}
                   className='text-xl font-bold text-gray-800 mb-6 flex items-center'

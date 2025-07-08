@@ -148,10 +148,10 @@ export const pokemonApi = createApi({
       invalidatesTags: ['Admin']
     }),
     updateFrenchie: build.mutation({
-      query: ({ id, ...data }) => ({
+      query: formData => ({
         url: `v1/users/frenchies/update-details-frenchie`,
-        method: 'PATCH',
-        body: data
+        method: 'PUT',
+        body: formData // formData directly
       }),
       invalidatesTags: ['Admin']
     })

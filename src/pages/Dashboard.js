@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   BarChart,
   Bar,
@@ -21,7 +21,9 @@ import {
   HiArrowSmUp,
   HiArrowSmDown
 } from 'react-icons/hi'
-
+import { getUserLocation } from '../utils/getUserLocation'
+import { useDispatch, useSelector } from 'react-redux'
+import { setLocation } from '../redux/globalSlice'
 
 const Dashboard = () => {
   // Mock data for the dashboard
@@ -54,6 +56,11 @@ const Dashboard = () => {
       { day: 'Sun', orders: 142 }
     ]
   })
+
+ 
+  
+
+
 
   // Colors for the bar chart
   const barColors = [

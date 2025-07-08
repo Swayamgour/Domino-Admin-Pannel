@@ -1,346 +1,489 @@
 import React, { useState } from 'react'
-import { useGetCurrentUserQuery } from '../redux/api'
-import {
-  HiCamera,
-  HiLocationMarker,
-  HiLockClosed,
-  HiOutlinePencil,
-  HiOutlineMail,
-  HiOutlinePhone,
-  HiOutlineGlobe,
-  HiOutlineCalendar,
-  HiOutlineKey
-} from 'react-icons/hi'
-// import { BsCrosshair2 } from 'react-icons/bs'
-import { RxCross2 } from 'react-icons/rx'
-import ChangePassword from '../component/ChangePassword'
+// import { motion } from 'framer-motion';
 import ProfileEdit from '../component/ProfileEdit'
+import ChangePassword from '../component/ChangePassword'
+import { useGetCurrentUserQuery } from '../redux/api'
 
 const ProfilePage = () => {
-  const { data: userData } = useGetCurrentUserQuery()
-  const [isEditing, setIsEditing] = useState(false)
-  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile')
+  const [passwordForm, setPasswordForm] = useState(false)
+  const [editProfile, setEditProfile] = useState(false)
 
-  const [profileData, setProfileData] = useState({
-    ...userData?.data,
-    profileImage:
-      'https://imgs.search.brave.com/dZdpbogNh8mudIRhimLEsXDq6Z1k_9dZV_i_20CkhzM/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cG5nYWxsLmNvbS93/cC1jb250ZW50L3Vw/bG9hZHMvNS9Vc2Vy/LVByb2ZpbGUtUE5H/LnBuZw'
-  })
+  // User data
+  // const userData = {
+  //   phone: '6392601692',
+  //   role: 'superAdmin',
+  //   name: 'SwayamGour',
+  //   email: 'goura0775@gmail.com',
+  //   createdAt: '2025-07-08T06:18:24.950Z',
+  //   updatedAt: '2025-07-08T07:39:11.130Z',
+  //   frenchies: [],
+  //   userId: '686cb830ba0f9abf8463835b',
+  //   status: 'active',
+  //   lastLogin: '2025-07-08T07:39:11.130Z'
+  // }
 
-  // Password update state
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  })
-  const [passwordError, setPasswordError] = useState('')
-  const [passwordSuccess, setPasswordSuccess] = useState('')
+  const { data: userDetail } = useGetCurrentUserQuery()
+  let userData = userDetail?.data
+  // console.log(userData)
 
+  // Format dates
   const formatDate = dateString => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' }
+    const options = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }
     return new Date(dateString).toLocaleDateString(undefined, options)
   }
 
-  const handleInputChange = e => {
-    const { name, value } = e.target
-    setProfileData(prev => ({ ...prev, [name]: value }))
-  }
+  // Stats data
+  const stats = [
+    { label: 'Total Projects', value: 12 },
+    { label: 'Active Tasks', value: 5 },
+    { label: 'Completed', value: 24 },
+    { label: 'Team Members', value: 8 }
+  ]
 
-  const handlePasswordChange = e => {
-    const { name, value } = e.target
-    setPasswordData(prev => ({ ...prev, [name]: value }))
-    if (passwordError) setPasswordError('')
-  }
-
-  const handleSubmit = e => {
-    e.preventDefault()
-    setIsEditing(false)
-    console.log('Updated profile:', profileData)
-  }
-
-  const handlePasswordSubmit = e => {
-    e.preventDefault()
-
-    if (!passwordData.currentPassword || !passwordData.newPassword) {
-      setPasswordError('All fields are required')
-      return
-    }
-
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords don't match")
-      return
-    }
-
-    if (passwordData.newPassword.length < 8) {
-      setPasswordError('Password must be at least 8 characters')
-      return
-    }
-
-    console.log('Password update data:', {
-      currentPassword: passwordData.currentPassword,
-      newPassword: passwordData.newPassword
-    })
-
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: ''
-    })
-    setPasswordError('')
-    setPasswordSuccess('Password updated successfully!')
-
-    setTimeout(() => setPasswordSuccess(''), 3000)
-  }
-
-  console.log(profileData?.data)
+  // Activity data
+  const activities = [
+    { id: 1, action: 'Logged in', time: '2025-07-08T07:39:11.130Z' },
+    { id: 2, action: 'Updated profile', time: '2025-07-08T06:45:22.130Z' },
+    { id: 3, action: 'Created new project', time: '2025-07-07T14:22:18.130Z' }
+  ]
 
   return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6'>
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 py-8 px-4 sm:px-6'>
+      <ProfileEdit setEditProfile={setEditProfile} editProfile={editProfile} />
+      <ChangePassword
+        setPasswordForm={setPasswordForm}
+        passwordForm={passwordForm}
+      />
       <div className='max-w-6xl mx-auto'>
-        {/* Header */}
-        {/* <div className='text-center mb-10'>
-          <h1 className='text-3xl md:text-4xl font-bold text-gray-800 mb-2'>
-            Business Profile
-          </h1>
-          <p className='text-gray-600 max-w-md mx-auto'>
-            Manage your account information and settings
-          </p>
-        </div> */}
-
         <div className='flex flex-col lg:flex-row gap-6'>
-          {/* Profile Card (Left Sidebar) */}
+          {/* Left Sidebar */}
           <div className='lg:w-1/3'>
-            <div className='bg-white rounded-2xl shadow-lg overflow-hidden'>
-              <div className='relative'>
-                {/* Banner */}
-                <div className='h-32 bg-gradient-to-r from-blue-500 to-indigo-600'></div>
+            <div
+              className='bg-white rounded-2xl shadow-lg overflow-hidden'
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              {/* Profile Header */}
+              <div className='bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center relative'>
+                <div className='absolute top-0 left-0 w-full h-full opacity-10'>
+                  <div className='pattern-dots pattern-blue-500 pattern-bg-transparent pattern-opacity-100 pattern-size-4' />
+                </div>
 
-                {/* Profile Content */}
-                <div className='px-6 pb-8 -mt-16'>
-                  <div className='flex justify-center'>
-                    <div className='relative group'>
-                      <img
-                        src={profileData.profileImage}
-                        alt='Profile'
-                        className='w-32 h-32 rounded-full border-4 border-white shadow-xl bg-gray-200 object-cover'
-                      />
-                      <div className='absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
-                        <button
-                          onClick={() =>
-                            document.getElementById('fileInput').click()
-                          }
-                          className='p-2 bg-white rounded-full'
-                        >
-                          <HiCamera className='h-6 w-6 text-gray-800' />
-                        </button>
-                      </div>
+                <div className='relative z-10'>
+                  <div className='mx-auto bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-full w-32 h-32 flex items-center justify-center mb-4'>
+                    <div className='bg-indigo-100 border-2 border-dashed border-indigo-300 rounded-full w-24 h-24 flex items-center justify-center'>
+                      <span className='text-3xl font-bold text-indigo-700'>
+                        {/* {userData?.name} */}
+                      </span>
                     </div>
                   </div>
-
-                  <input
-                    type='file'
-                    id='fileInput'
-                    className='hidden'
-                    accept='image/*'
-                  />
-
-                  <div className='text-center mt-4'>
-                    <div className='flex flex-col items-center'>
-                      <h2 className='text-2xl font-bold text-gray-800'>
-                        {profileData.frenchieName}
-                      </h2>
-                      <div className='mt-2'>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                            profileData.status === 'Approved'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
-                        >
-                          {profileData.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className='text-gray-600 mt-2 flex items-center justify-center'>
-                      <HiLocationMarker className='h-4 w-4 mr-1 text-indigo-500' />
-                      {profileData.city}, {profileData.state}
-                    </p>
-
-                    <p className='text-gray-500 text-sm mt-1'>
-                      ID: {profileData.frenchiesID}
-                    </p>
-
-                    <div className='mt-6 flex flex-col space-y-3'>
-                      <button
-                        onClick={() => setIsEditing(!isEditing)}
-                        className='px-4 py-2 flex items-center justify-center bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 transition-all'
-                      >
-                        <HiOutlinePencil className='mr-2' />
-                        {isEditing ? 'Cancel Editing' : 'Edit Profile'}
-                      </button>
-
-                      <button
-                        onClick={() => setShowPasswordForm(!showPasswordForm)}
-                        className={`px-4 py-2 flex items-center justify-center rounded-lg border ${
-                          showPasswordForm
-                            ? 'border-gray-300 text-gray-800'
-                            : 'border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100'
-                        } transition-colors`}
-                      >
-                        <HiOutlineKey className='mr-2' />
-                        {showPasswordForm
-                          ? 'Cancel Password Change'
-                          : 'Change Password'}
-                      </button>
-                    </div>
+                  <h2 className='text-2xl font-bold text-white'>
+                    {userData?.ownerName}
+                  </h2>
+                  <p className='text-indigo-100 mt-1'>{userData?.email}</p>
+                  <div className='mt-3'>
+                    <span className='inline-block bg-white/20 backdrop-blur-sm text-white text-sm font-semibold px-4 py-1 rounded-full'>
+                      {userData?.role.toUpperCase()}
+                    </span>
                   </div>
                 </div>
               </div>
 
-              {/* Stats */}
-              <div className='px-6 py-4 border-t border-gray-100'>
-                <div className='grid grid-cols-3 gap-4'>
-                  <div className='text-center'>
-                    <p className='text-2xl font-bold text-indigo-600'>24</p>
-                    <p className='text-xs text-gray-500'>Projects</p>
+              {/* Profile Stats */}
+              <div className='p-6'>
+                <div className='grid grid-cols-2 gap-4'>
+                  {stats.map((stat, index) => (
+                    <div
+                      key={index}
+                      className='bg-indigo-50 p-4 rounded-xl text-center'
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
+                    >
+                      <p className='text-2xl font-bold text-indigo-700'>
+                        {stat.value}
+                      </p>
+                      <p className='text-xs text-gray-600'>{stat.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Status Indicator */}
+                <div className='mt-6 flex items-center justify-between bg-gray-50 p-4 rounded-xl'>
+                  <div className='flex items-center'>
+                    <div className='w-3 h-3 rounded-full bg-green-500 mr-2'></div>
+                    <span className='text-sm font-medium'>Account Status</span>
                   </div>
-                  <div className='text-center'>
-                    <p className='text-2xl font-bold text-indigo-600'>89%</p>
-                    <p className='text-xs text-gray-500'>Success</p>
-                  </div>
-                  <div className='text-center'>
-                    <p className='text-2xl font-bold text-indigo-600'>2.1k</p>
-                    <p className='text-xs text-gray-500'>Customers</p>
-                  </div>
+                  <span className='text-sm font-semibold text-green-600'>
+                    Active
+                  </span>
+                </div>
+
+                {/* Last Login */}
+                <div className='mt-4 text-center text-sm text-gray-500'>
+                  Last login: {formatDate(userData?.lastLogin)}
                 </div>
               </div>
             </div>
 
-            {/* Account Info Card */}
-            <div className='bg-white rounded-2xl shadow-lg mt-6 p-6'>
-              <h3 className='text-lg font-bold text-gray-800 mb-4 flex items-center'>
-                <HiOutlineCalendar className='mr-2 text-indigo-500' />
-                Account Information
+            {/* Quick Actions */}
+            <div
+              className='mt-6 bg-white rounded-2xl shadow-lg p-6'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <h3 className='text-lg font-bold text-gray-800 mb-4'>
+                Quick Actions
               </h3>
-
               <div className='space-y-3'>
-                <div>
-                  <p className='text-xs text-gray-500'>Account Created</p>
-                  <p className='text-sm font-medium text-gray-800'>
-                    {formatDate(profileData.createdAt)}
-                  </p>
-                </div>
-
-                <div>
-                  <p className='text-xs text-gray-500'>Last Updated</p>
-                  <p className='text-sm font-medium text-gray-800'>
-                    {formatDate(profileData.updatedAt)}
-                  </p>
-                </div>
-
-                <div>
-                  <p className='text-xs text-gray-500'>Account Type</p>
-                  <p className='text-sm font-medium text-gray-800 capitalize'>
-                    {profileData.role}
-                  </p>
-                </div>
+                <button
+                  onClick={() => setEditProfile(true)}
+                  className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'
+                >
+                  <span className='font-medium text-gray-700'>
+                    Edit Profile
+                  </span>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 text-indigo-600'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setPasswordForm(true)}
+                  className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'
+                >
+                  <span className='font-medium text-gray-700'>
+                    Change Password
+                  </span>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 text-indigo-600'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                </button>
+                {/* <button className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'>
+                  <span className='font-medium text-gray-700'>
+                    Notification Settings
+                  </span>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 text-indigo-600'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path d='M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z' />
+                  </svg>
+                </button> */}
               </div>
             </div>
           </div>
 
-          {/* Main Content Area */}
+          {/* Main Content */}
           <div className='lg:w-2/3'>
-            {/* Profile Information Card */}
-            <div className='bg-white rounded-2xl shadow-lg p-6 mb-6'>
-              <div className='flex justify-between items-center mb-6'>
-                <h3 className='text-xl font-bold text-gray-800'>
-                  Profile Information
-                </h3>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    profileData.status === 'Approved'
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}
-                >
-                  {profileData.status}
-                </span>
+            <div
+              className='bg-white rounded-2xl shadow-lg overflow-hidden'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              {/* Tabs */}
+              <div className='border-b border-gray-200'>
+                <nav className='flex px-6'>
+                  <button
+                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
+                      activeTab === 'profile'
+                        ? 'border-indigo-600 text-indigo-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setActiveTab('profile')}
+                  >
+                    Profile Information
+                  </button>
+                  <button
+                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
+                      activeTab === 'activity'
+                        ? 'border-indigo-600 text-indigo-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setActiveTab('activity')}
+                  >
+                    Activity Log
+                  </button>
+                  <button
+                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
+                      activeTab === 'settings'
+                        ? 'border-indigo-600 text-indigo-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    Settings
+                  </button>
+                </nav>
               </div>
 
-              {isEditing ? (
-                <ProfileEdit />
-              ) : (
-                <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                  <div className='flex items-start'>
-                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
-                      <HiOutlineMail className='h-5 w-5 text-indigo-600' />
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>Email Address</p>
-                      <p className='text-sm font-medium text-gray-800'>
-                        {profileData.email}
-                      </p>
-                    </div>
-                  </div>
+              {/* Tab Content */}
+              <div className='p-6'>
+                {activeTab === 'profile' && (
+                  <div>
+                    <h3 className='text-xl font-bold text-gray-800 mb-6'>
+                      Personal Information
+                    </h3>
 
-                  <div className='flex items-start'>
-                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
-                      <HiOutlinePhone className='h-5 w-5 text-indigo-600' />
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>Phone Number</p>
-                      <p className='text-sm font-medium text-gray-800'>
-                        {profileData.phone}
-                      </p>
-                    </div>
-                  </div>
+                    <div className='space-y-6'>
+                      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+                        <div className='bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100'>
+                          <h3 className='text-sm font-medium text-gray-500 mb-2 flex items-center'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-4 w-4 mr-2 text-indigo-500'
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M7 2a2 2 0 00-2 2v12a2 2 0 002 2h6a2 2 0 002-2V4a2 2 0 00-2-2H7zm3 14a1 1 0 100-2 1 1 0 000 2z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                            Phone Number
+                          </h3>
+                          <p className='text-lg font-semibold text-gray-800'>
+                            {userData?.phone}
+                          </p>
+                        </div>
 
-                  <div className='md:col-span-2 flex items-start'>
-                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
-                      <HiOutlineGlobe className='h-5 w-5 text-indigo-600' />
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>Address</p>
-                      <p className='text-sm font-medium text-gray-800'>
-                        {profileData.address}
-                      </p>
-                    </div>
-                  </div>
+                        <div className='bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100'>
+                          <h3 className='text-sm font-medium text-gray-500 mb-2 flex items-center'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-4 w-4 mr-2 text-indigo-500'
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              <path d='M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z' />
+                              <path d='M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z' />
+                            </svg>
+                            Email Address
+                          </h3>
+                          <p className='text-lg font-semibold text-gray-800 break-all'>
+                            {userData?.email}
+                          </p>
+                        </div>
 
-                  <div className='flex items-start'>
-                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
-                      <HiLocationMarker className='h-5 w-5 text-indigo-600' />
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>City</p>
-                      <p className='text-sm font-medium text-gray-800'>
-                        {profileData.city}
-                      </p>
-                    </div>
-                  </div>
+                        <div className='bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100'>
+                          <h3 className='text-sm font-medium text-gray-500 mb-2 flex items-center'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-4 w-4 mr-2 text-indigo-500'
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                            Account Created
+                          </h3>
+                          <p className='text-lg font-semibold text-gray-800'>
+                            {formatDate(userData?.createdAt)}
+                          </p>
+                        </div>
 
-                  <div className='flex items-start'>
-                    <div className='bg-indigo-50 p-2 rounded-lg mr-3'>
-                      <HiLocationMarker className='h-5 w-5 text-indigo-600' />
-                    </div>
-                    <div>
-                      <p className='text-xs text-gray-500'>State</p>
-                      <p className='text-sm font-medium text-gray-800'>
-                        {profileData.state}
-                      </p>
+                        <div className='bg-gradient-to-br from-indigo-50 to-purple-50 p-5 rounded-xl border border-indigo-100'>
+                          <h3 className='text-sm font-medium text-gray-500 mb-2 flex items-center'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-4 w-4 mr-2 text-indigo-500'
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                            Last Updated
+                          </h3>
+                          <p className='text-lg font-semibold text-gray-800'>
+                            {formatDate(userData?.updatedAt)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Frenchies Section */}
+                      <div>
+                        <h3 className='text-xl font-bold text-gray-800 mb-4 flex items-center'>
+                          <svg
+                            xmlns='http://www.w3.org/2000/svg'
+                            className='h-5 w-5 mr-2 text-indigo-600'
+                            viewBox='0 0 20 20'
+                            fill='currentColor'
+                          >
+                            <path d='M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z' />
+                          </svg>
+                          Frenchies
+                        </h3>
+                        {userData?.frenchies && userData?.frenchies.length > 0 ? (
+                          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+                            {userData?.frenchies.map((frenchie, index) => (
+                              <div
+                                key={index}
+                                className='bg-indigo-50 p-4 rounded-lg border border-indigo-100'
+                              >
+                                <div className='flex items-center'>
+                                  <div className='bg-indigo-100 p-2 rounded-lg mr-3'>
+                                    <svg
+                                      xmlns='http://www.w3.org/2000/svg'
+                                      className='h-5 w-5 text-indigo-600'
+                                      viewBox='0 0 20 20'
+                                      fill='currentColor'
+                                    >
+                                      <path
+                                        fillRule='evenodd'
+                                        d='M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z'
+                                        clipRule='evenodd'
+                                      />
+                                    </svg>
+                                  </div>
+                                  <span className='font-medium text-gray-800'>
+                                    {frenchie}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className='bg-indigo-50 rounded-xl p-8 text-center border-2 border-dashed border-indigo-200'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-12 w-12 mx-auto text-indigo-400'
+                              fill='none'
+                              viewBox='0 0 24 24'
+                              stroke='currentColor'
+                            >
+                              <path
+                                strokeLinecap='round'
+                                strokeLinejoin='round'
+                                strokeWidth={1.5}
+                                d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                              />
+                            </svg>
+                            <p className='text-gray-600 mt-3'>
+                              No frenchies associated with this account
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {activeTab === 'activity' && (
+                  <div>
+                    <h3 className='text-xl font-bold text-gray-800 mb-6'>
+                      Recent Activity
+                    </h3>
+                    <div className='space-y-4'>
+                      {activities.map((activity, index) => (
+                        <div
+                          key={activity.id}
+                          className='flex items-start p-4 border-b border-gray-100 last:border-0'
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                          <div className='bg-indigo-100 p-2 rounded-full mr-4'>
+                            <svg
+                              xmlns='http://www.w3.org/2000/svg'
+                              className='h-5 w-5 text-indigo-600'
+                              viewBox='0 0 20 20'
+                              fill='currentColor'
+                            >
+                              <path
+                                fillRule='evenodd'
+                                d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
+                                clipRule='evenodd'
+                              />
+                            </svg>
+                          </div>
+                          <div className='flex-1'>
+                            <p className='font-medium text-gray-800'>
+                              {activity.action}
+                            </p>
+                            <p className='text-sm text-gray-500'>
+                              {formatDate(activity.time)}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'settings' && (
+                  <div>
+                    <h3 className='text-xl font-bold text-gray-800 mb-6'>
+                      Account Settings
+                    </h3>
+                    <div className='space-y-6'>
+                      <div className='bg-gray-50 p-5 rounded-xl'>
+                        <h4 className='font-medium text-gray-800 mb-3'>
+                          Account Preferences
+                        </h4>
+                        <div className='space-y-3'>
+                          <div className='flex items-center justify-between'>
+                            <span className='text-gray-600'>
+                              Email Notifications
+                            </span>
+                            <label className='relative inline-flex items-center cursor-pointer'>
+                              <input
+                                type='checkbox'
+                                className='sr-only peer'
+                                defaultChecked
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                          </div>
+                          <div className='flex items-center justify-between'>
+                            <span className='text-gray-600'>
+                              Push Notifications
+                            </span>
+                            <label className='relative inline-flex items-center cursor-pointer'>
+                              <input type='checkbox' className='sr-only peer' />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-
-            {/* Password Update Section */}
-
-            <ChangePassword
-              showPasswordForm={showPasswordForm}
-              setShowPasswordForm={setShowPasswordForm}
-            />
           </div>
         </div>
       </div>
