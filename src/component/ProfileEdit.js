@@ -129,6 +129,7 @@ function ProfileEdit ({ setEditProfile, editProfile }) {
                     <HiOutlineUser className='mr-2 text-gray-500 text-sm' />
                     Upload Image
                   </label>
+                  
                   <input
                     type='file'
                     accept='image/*'
