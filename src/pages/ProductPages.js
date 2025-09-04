@@ -86,7 +86,7 @@ const ProductPages = () => {
   const [deleteProd, resultDelete] = useDeleteProductMutation()
   const [updateProduct, resultUpdate] = useUpdateProductMutation()
 
-  // console.log(resultDelete)
+  // console.log(Product, data)
 
   // State management
 
@@ -189,31 +189,34 @@ const ProductPages = () => {
 
     const formData = new FormData()
 
+    // Append the required fields in the correct format
     formData.append('name', editingProduct?.name)
     formData.append('description', editingProduct?.description)
     formData.append('price', editingProduct?.price)
+    formData.append('categoryId', editingProduct?.categoryId)
 
-    // formData.append('stock', editingProduct?.status);
+
+    let body = {
+      name: editingProduct?.name,
+      description: editingProduct?.description,
+      price: editingProduct?.price,
+      categoryId: editingProduct?.categoryId
+    }
 
     try {
       if (editingProduct?._id) {
-        formData.append(
-          'category',
-          editingProduct?.category?._id || editingProduct?.category
-        )
-        formData.append('Stock', editingProduct?.stock)
-        // ✅ Update product
+        // Update existing product
         await updateProduct({
           id: editingProduct._id,
           updatedData: formData
         })
-
-        // toast.success('Product updated successfully')
+        toast.success('Product updated successfully')
       } else {
-        // ✅ Add new product
-        formData.append('image', editingProduct?.image)
-        formData.append('category', editingProduct?.category)
-        await addProduct(formData)
+        // Add new product - include image if available
+        if (editingProduct?.image) {
+          formData.append('image', editingProduct?.image)
+        }
+        await addProduct(body)
         toast.success('Product added successfully')
       }
 
@@ -241,23 +244,26 @@ const ProductPages = () => {
   // Open form to add new product
   const openAddForm = () => {
     setEditingProduct({
-      id: null,
       name: '',
       price: '',
       description: '',
-      category: '',
-      vendor: '',
-      image: '',
-      stock: 0,
-      status: 'in-stock'
-      //   image: null
+      categoryId: '',
+      isActive: true,
+      image: null
     })
     setIsFormOpen(true)
   }
 
-  // Open form to edit product
   const openEditForm = product => {
-    setEditingProduct({ ...product })
+    setEditingProduct({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      description: product.description,
+      categoryId: product.categoryId?._id || product.categoryId,
+      isActive: product.isActive,
+      image: product.image
+    })
     setIsFormOpen(true)
   }
 
@@ -482,7 +488,7 @@ const ProductPages = () => {
 
         {/* Products List - Mobile View */}
         <div className='md:hidden mb-6'>
-          {Product?.data?.map(product => (
+          {Product?.map(product => (
             <div
               key={product.id}
               className='bg-white rounded-xl shadow mb-4 overflow-hidden'
@@ -500,8 +506,8 @@ const ProductPages = () => {
                   <span
                     onClick={() => toggleStockStatus(product.id)}
                     className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full cursor-pointer ${product.stock === 'In Stock'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
                       }`}
                   >
                     {product.stock === 'In Stock' ? 'In Stock' : 'Out of Stock'}
@@ -582,9 +588,9 @@ const ProductPages = () => {
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Price
                   </th>
-                  <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
+                  {/* <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Stock
-                  </th>
+                  </th> */}
                   <th className='px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>
                     Status
                   </th>
@@ -594,7 +600,7 @@ const ProductPages = () => {
                 </tr>
               </thead>
               <tbody className='bg-white divide-y divide-gray-200'>
-                {Product?.data?.map(product => (
+                {Product?.map(product => (
                   <tr
                     key={product._id}
                     className='hover:bg-gray-50 transition-colors'
@@ -624,8 +630,8 @@ const ProductPages = () => {
                     </td>
                     <td className='px-4 py-4 whitespace-nowrap'>
                       <span className='px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800'>
-                        {console.log(product)}
-                        {product?.category?.name}
+
+                        {product?.categoryId?.name}
                       </span>
                     </td>
                     {/* <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
@@ -634,18 +640,18 @@ const ProductPages = () => {
                     <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-900'>
                       ₹ {product.price}
                     </td>
-                    <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
+                    {/* <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
                       {product.stock} items
-                    </td>
+                    </td> */}
                     <td className='px-4 py-4 whitespace-nowrap'>
                       <span
                         onClick={() => toggleStockStatus(product.id)}
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${product.stock === 'In Stock'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${product.isActive === true
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
                           }`}
                       >
-                        {product.stock === 'In Stock'
+                        {product.isActive === true
                           ? 'In Stock'
                           : 'Out of Stock'}
                       </span>
@@ -731,7 +737,7 @@ const ProductPages = () => {
                       value={editingProduct.price}
                       onChange={handleInputChange}
                       min='0'
-                      step='0.01'
+                      step='1'
                       className='w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500'
                       required
                     />
@@ -744,21 +750,21 @@ const ProductPages = () => {
                       </label>
                       <label
                         onClick={() => setIsDialogOpen(true)}
-                        className='block  mb-1 text-sm md:text-base p-1 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-lg'
+                        className='block mb-1 text-sm md:text-base p-1 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-lg cursor-pointer'
                       >
                         Add Category
                       </label>
                     </div>
 
                     <select
-                      name='category'
-                      value={editingProduct.category}
+                      name='categoryId'
+                      value={editingProduct.categoryId}
                       onChange={handleInputChange}
                       className='w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500'
                       required
                     >
                       <option value=''>Select a category</option>
-                      {data?.data?.map(category => (
+                      {data?.map(category => (
                         <option key={category?._id} value={category?._id}>
                           {category?.name}
                         </option>
@@ -777,10 +783,11 @@ const ProductPages = () => {
                       rows='3'
                       className='w-full p-2 md:p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500'
                       required
+                      placeholder='Product description...'
                     ></textarea>
                   </div>
 
-                  {editingProduct?._id === undefined && (
+                  {!editingProduct?._id && (
                     <div>
                       <label className='block text-gray-700 mb-1 text-sm md:text-base'>
                         Product Image
@@ -797,33 +804,30 @@ const ProductPages = () => {
 
                   <div>
                     <label className='block text-gray-700 mb-1 text-sm md:text-base'>
-                      Inventory Stock
+                      Product Status
                     </label>
                     <div className='flex space-x-3 md:space-x-4'>
                       <label className='flex items-center'>
                         <input
                           type='radio'
-                          name='status'
-                          value='in-stock'
-                          checked={editingProduct.stock === 'In Stock'}
-                          onChange={handleInputChange}
+                          name='isActive'
+                          value={true}
+                          checked={editingProduct.isActive === true}
+                          onChange={() => setEditingProduct({ ...editingProduct, isActive: true })}
                           className='h-4 w-4 text-indigo-600 focus:ring-indigo-500'
                         />
-                        <span className='ml-2 text-sm'>In Stock</span>
+                        <span className='ml-2 text-sm'>Active</span>
                       </label>
                       <label className='flex items-center'>
                         <input
                           type='radio'
-                          name='status'
-                          value='out-of-stock'
-                          checked={
-                            editingProduct._id &&
-                            editingProduct.stock !== 'In Stock'
-                          }
-                          onChange={handleInputChange}
+                          name='isActive'
+                          value={false}
+                          checked={editingProduct.isActive === false}
+                          onChange={() => setEditingProduct({ ...editingProduct, isActive: false })}
                           className='h-4 w-4 text-indigo-600 focus:ring-indigo-500'
                         />
-                        <span className='ml-2 text-sm'>Out of Stock</span>
+                        <span className='ml-2 text-sm'>Inactive</span>
                       </label>
                     </div>
                   </div>

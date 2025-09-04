@@ -40,11 +40,11 @@ const LoginPage = () => {
     await loginForAll(body)
   }
 
-  // console.log(result?.data?.message?.accessToken)
+  // console.log(result?.data?.message?.accessToken, result?.data?.token)
 
   useEffect(() => {
-    if (result?.data?.data?.accessToken) {
-      Cookies.set('accessToken', result.data.data.accessToken, {
+    if (result?.data?.token) {
+      Cookies.set('accessToken', result?.data?.token, {
         expires: 7
       })
       if (result?.data?.data?.user?.role === 'customer') {
@@ -53,7 +53,7 @@ const LoginPage = () => {
         navigate('/Home')
       }
     }
-  }, [result?.isSuccess, navigate, result?.data?.data?.accessToken])
+  }, [result?.isSuccess, navigate, result?.data?.token])
 
   const handelClickTwo = e => {
     e.preventDefault()
@@ -67,7 +67,7 @@ const LoginPage = () => {
   // console.log(data)
 
   useEffect(() => {
-    if (isSuccess && data?.success) {
+    if (isSuccess ) {
       // if (data?.user?.role !== 'customer') {
       //
       // } else {

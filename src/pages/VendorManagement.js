@@ -27,12 +27,14 @@ const VendorManagement = () => {
   const [hasMore, setHasMore] = useState(true)
   const loaderRef = useRef()
 
-  const { data, isFetching } = useGetAllVenderQuery({ page, limit: 10 })
+  const { data, isFetching } = useGetAllVenderQuery()
+
+  console.log(data)
 
   useEffect(() => {
-    if (data?.data?.length) {
-      setFrenchies(prev => [...prev, ...data.data])
-      if (data.data.length < 10) {
+    if (data?.length) {
+      setFrenchies(prev => [...prev, ...data])
+      if (data.length < 10) {
         setHasMore(false)
       }
     } else {
@@ -117,13 +119,13 @@ const VendorManagement = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    if (name.startsWith("contact.")) {
-      const contactField = name.split(".")[1];
+    if (name.startsWith("owner.")) {
+      const ownerField = name.split(".")[1];
       setEditingVendor((prev) => ({
         ...prev,
-        contact: {
-          ...prev.contact, // keep old contact fields
-          [contactField]: value,
+        owner: {
+          ...prev.owner, // keep existing owner fields
+          [ownerField]: value,
         },
       }));
     } else {
@@ -134,7 +136,6 @@ const VendorManagement = () => {
     }
   };
 
-
   useEffect(() => {
     const fetchStates = async () => {
       const res = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
@@ -143,10 +144,13 @@ const VendorManagement = () => {
         body: JSON.stringify({ country: "India" }),
       });
       const data = await res.json();
-      setStates(data.data.states || []);
+      console.log(data)
+      setStates(data?.data?.states || []);
     };
     fetchStates();
   }, []);
+
+  console.log(states)
 
 
   const [cities, setCities] = useState([]);
@@ -160,12 +164,12 @@ const VendorManagement = () => {
           body: JSON.stringify({ country: "India", state: editingVendor?.state }),
         });
         const data = await res.json();
-        setCities(data.data || []);
+        console.log(data)
+        setCities(data?.data || []);
       };
       fetchCities();
     }
   }, [editingVendor?.state]);
-
 
 
 
@@ -175,20 +179,15 @@ const VendorManagement = () => {
       vendor || {
         id: null,
         name: '',
-        contact: {
-          person: '',
-          email: '',
-          phone: ''
-        },
+        phone: '',
+        address: '',
         city: '',
-        country: '',
-        logo: '',
-        status: 'pending',
-        products: [],
-        sales: 0,
-        rating: 0,
-        reviews: 0,
-        Address: ''
+        state: '',
+        owner: {
+          name: '',
+          phone: '',
+          password: ''
+        }
       }
     )
     setIsFormOpen(true)
@@ -199,34 +198,17 @@ const VendorManagement = () => {
     e.preventDefault()
 
     let body = {
-      name: editingVendor?.name,
-      phone: editingVendor?.contact?.phone,
-      email: editingVendor?.contact?.email,
-      address: editingVendor?.Address,
-      city: editingVendor?.city,
-      state: editingVendor?.state,
-      country: editingVendor?.country,
-      ownerName: editingVendor?.contact?.person
+      name: editingVendor.name,
+      phone: editingVendor.phone,
+      address: editingVendor.address,
+      city: editingVendor.city,
+      state: editingVendor.state,
+      owner: editingVendor.owner
     }
 
-    console.log(body)
+    console.log("Submitting:", body)
 
     await createAdminBySuperAdmin(body)
-
-    // if (editingVendor.id) {
-    //   // Update existing vendor
-    //   setFrenchies(
-    //     Frenchies.map(v => (v.id === editingVendor.id ? editingVendor : v))
-    //   )
-    // } else {
-    //   // Add new vendor
-    //   const newVendor = {
-    //     ...editingVendor,
-    //     id: Frenchies.length + 1,
-    //     registrationDate: new Date().toISOString().split('T')[0]
-    //   }
-    //   setFrenchies([...Frenchies, newVendor])
-    // }
 
     setIsFormOpen(false)
     setEditingVendor(null)
@@ -355,7 +337,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Total Frenchies</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {data?.totalDocs}
+                  {data?.length}
                 </p>
               </div>
             </div>
@@ -382,7 +364,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Approved Frenchies</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {data?.totalApproved}
+                  {data?.length}
                 </p>
               </div>
             </div>
@@ -436,10 +418,10 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Total Sales</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  ₹
-                  {Frenchies
+                  ₹ 0
+                  {/* {Frenchies
                     .reduce((sum, vendor) => sum + vendor.salesCount, 0)
-                    .toLocaleString()}
+                    .toLocaleString()} */}
                 </p>
               </div>
             </div>
@@ -448,7 +430,7 @@ const VendorManagement = () => {
 
 
         {/* Frenchies Table */}
-        {console.log(data === undefined)}
+        {/* {console.log(data === undefined)} */}
         <div>
           <div className='overflow-x-auto'>
             <VendorCard data={data} />
@@ -840,12 +822,12 @@ const VendorManagement = () => {
 
                   <div>
                     <label className='block text-gray-700 mb-2'>
-                      Owner name
+                      Owner Name
                     </label>
                     <input
                       type='text'
-                      name='contact.person'
-                      value={editingVendor.contact.person}
+                      name='owner.name'
+                      value={editingVendor.owner?.name || ''}
                       onChange={handleInputChange}
                       className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                       required
@@ -854,32 +836,18 @@ const VendorManagement = () => {
 
                   <div>
                     <label className='block text-gray-700 mb-2'>
-                      Contact Email
-                    </label>
-                    <input
-                      type='email'
-                      name='contact.email'
-                      value={editingVendor.contact.email}
-                      onChange={handleInputChange}
-                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-gray-700 mb-2'>
-                      Contact Phone
+                      Shop Phone
                     </label>
                     <input
                       type='tel'
-                      name='contact.phone'
-                      value={editingVendor.contact.phone}
+                      name='phone'
+                      value={editingVendor.phone}
                       onChange={e => {
                         const onlyNums = e.target.value.replace(/\D/g, '') // Remove non-digits
                         if (onlyNums.length <= 10) {
                           handleInputChange({
                             target: {
-                              name: 'contact.phone',
+                              name: 'phone',
                               value: onlyNums
                             }
                           })
@@ -895,11 +863,54 @@ const VendorManagement = () => {
                   </div>
 
                   <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Owner Phone
+                    </label>
+                    <input
+                      type='tel'
+                      name='owner.phone'
+                      value={editingVendor.owner?.phone || ''}
+                      onChange={e => {
+                        const onlyNums = e.target.value.replace(/\D/g, '') // Remove non-digits
+                        if (onlyNums.length <= 10) {
+                          handleInputChange({
+                            target: {
+                              name: 'owner.phone',
+                              value: onlyNums
+                            }
+                          })
+                        }
+                      }}
+                      inputMode='numeric'
+                      maxLength={10}
+                      pattern='^\d{10}$'
+                      title='Enter a valid 10-digit phone number'
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className='block text-gray-700 mb-2'>
+                      Owner Password
+                    </label>
+                    <input
+                      type='password'
+                      name='owner.password'
+                      value={editingVendor.owner?.password || ''}
+                      onChange={handleInputChange}
+                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      required
+                      minLength={5}
+                    />
+                  </div>
+
+                  <div>
                     <label className='block text-gray-700 mb-2'>Address</label>
                     <input
                       type='text'
-                      name='Address'
-                      value={editingVendor.Address}
+                      name='address'
+                      value={editingVendor.address}
                       onChange={handleInputChange}
                       className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                       required
@@ -925,28 +936,22 @@ const VendorManagement = () => {
                   </div>
 
                   <div>
-                    <label className="block text-gray-700 mb-2">
-                      City <span className="text-gray-400">(Optional)</span>
-                    </label>
+                    <label className="block text-gray-700 mb-2">City</label>
                     <select
                       name="city"
                       value={editingVendor.city || ""}
                       onChange={handleInputChange}
                       className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
                     >
                       <option value="">Select City</option>
-                      {cities.map((city) => (
+                      {cities?.map((city) => (
                         <option key={city} value={city}>
                           {city}
                         </option>
                       ))}
                     </select>
                   </div>
-
-
-
-
-
                 </div>
 
                 {/* Footer buttons */}

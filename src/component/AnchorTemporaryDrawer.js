@@ -40,6 +40,9 @@ export default function AnchorTemporaryDrawer () {
     await logout()
   }
 
+    let franchise_admin = CurrentUser?.user?.role === 'franchise_admin'
+
+
   const NavItem = ({ to, icon: Icon, label }) => (
     <NavLink
       to={to}
@@ -77,7 +80,7 @@ export default function AnchorTemporaryDrawer () {
           </div>
           <div>
             <h1 className='text-2xl font-bold'>
-              {CurrentUser?.data?.role === 'frenchies'
+              {franchise_admin
                 ? 'Admin'
                 : 'Super Admin'}
             </h1>
@@ -89,13 +92,13 @@ export default function AnchorTemporaryDrawer () {
         <nav className='space-y-1 flex-1 '>
           <NavItem to='/Home' icon={FaHome} label='Dashboard' />
           {/* <NavItem to='/Products' icon={FaBoxOpen} label='Products' /> */}
-          {CurrentUser?.data?.role === 'frenchies' && (
+          {franchise_admin && (
             <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
           )}
 
           {/* <NavItem to="/Vendor" icon={FaStore} label="Vendors" /> */}
-          {CurrentUser?.data?.role !== 'frenchies' && (
-            <NavItem to='/Vendor' icon={FaStore} label='Frenchie' />
+          {!franchise_admin && (
+            <NavItem to='/Vendor' icon={FaStore} label='Frenchies' />
           )}
 
           <NavItem

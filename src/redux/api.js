@@ -4,11 +4,11 @@ import Cookies from 'js-cookie'
 export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://backend-food-delivery-app-ffzz.onrender.com/api/',
+    baseUrl: 'https://backend-dominos-admin-pannel.onrender.com/api/',
     prepareHeaders: headers => {
       const token = Cookies.get('accessToken') // or localStorage.getItem('accessToken')
       if (token) {
-        headers.set('Authorization', `${token}`)
+        headers.set('Authorization', `Bearer ${token}`)
       }
       return headers
     }
@@ -25,7 +25,7 @@ export const pokemonApi = createApi({
       providesTags: ['Admin']
     }),
     getOrderById: build.query({
-      query: id => `v1/order/get-order-by-superAdmin/${id}`,
+      query: id => `order`,
       providesTags: ['Admin']
     }),
     getOrderByfrenchie: build.query({
@@ -33,13 +33,13 @@ export const pokemonApi = createApi({
       providesTags: ['Admin']
     }),
     getCurrentUser: build.query({
-      query: id => `v1/users/getcurrentuserdetails`,
+      query: id => `auth/check-token`,
       providesTags: id => [{ type: 'Admin', id }]
     }),
 
     AllLogin: build.mutation({
       query: newAdmin => ({
-        url: 'v1/users/login',
+        url: 'auth/login',
         method: 'POST',
         body: newAdmin
         // credentials: 'include' // ✅ Required for sending cookies
@@ -56,14 +56,14 @@ export const pokemonApi = createApi({
     }),
 
     getAllVender: build.query({
-      query: ({ page = 1, limit = 10 }) =>
-        `v1/users/super-admin/getallfrenchies?page=${page}&limit=${limit}`,
+      query: () =>
+        `franchise`,
       providesTags: ['Admin']
     }),
 
     createAdminBySuperAdmin: build.mutation({
       query: newAdmin => ({
-        url: 'v1/users/super-admin/create-admin',
+        url: 'franchise',
         method: 'POST',
         body: newAdmin
       }),
@@ -97,15 +97,15 @@ export const pokemonApi = createApi({
     }),
 
     getAllProduct: build.query({
-      query: () => `v1/product/getallproduct`,
+      query: () => `product`,
       providesTags: ['product']
     }),
 
     addProduct: build.mutation({
-      query: newAdmin => ({
-        url: 'v1/product/create-product',
+      query: body => ({
+        url: 'product',
         method: 'POST',
-        body: newAdmin
+        body
       }),
       invalidatesTags: ['product']
     }),
@@ -128,7 +128,7 @@ export const pokemonApi = createApi({
     }),
 
     getAllCategory: build.query({
-      query: () => `v1/category/getallcategory`,
+      query: () => `category`,
       providesTags: id => [{ type: 'Category', id }]
     }),
     CreateCategory: build.mutation({

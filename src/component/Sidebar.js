@@ -20,19 +20,17 @@ const Sidebar = () => {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
-          isActive
-            ? 'bg-indigo-600 shadow-lg shadow-indigo-500/20 text-white'
-            : 'hover:bg-gray-700 text-gray-300'
+        `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${isActive
+          ? 'bg-indigo-600 shadow-lg shadow-indigo-500/20 text-white'
+          : 'hover:bg-gray-700 text-gray-300'
         }`
       }
     >
       {({ isActive }) => (
         <>
           <div
-            className={`p-2 rounded-lg ${
-              isActive ? 'bg-indigo-700' : 'bg-gray-700'
-            }`}
+            className={`p-2 rounded-lg ${isActive ? 'bg-indigo-700' : 'bg-gray-700'
+              }`}
           >
             <Icon className='text-lg' />
           </div>
@@ -47,7 +45,8 @@ const Sidebar = () => {
   const { data: CurrentUser } = useGetCurrentUserQuery()
   const [logout] = useLogoutMutation()
 
-  // console.log(CurrentUser)
+
+  let franchise_admin = CurrentUser?.user?.role === 'franchise_admin'
 
   const handelLogOut = async () => {
     try {
@@ -80,17 +79,17 @@ const Sidebar = () => {
           <p className='text-xs text-gray-400'>Dashboard v3.0</p>
         </div> */}
         <h1 className='text-2xl font-bold text-center'>
-          {CurrentUser?.data?.role === 'frenchies' ? 'Admin' : 'Super Admin'}
+          {franchise_admin ? 'Admin' : 'Super Admin'}
         </h1>
       </div>
 
       {/* Navigation */}
       <nav className='space-y-1 flex-1 '>
         <NavItem to='/Home' icon={FaHome} label='Dashboard' />
-        {CurrentUser?.data?.role === 'frenchies' && (
+        {franchise_admin && (
           <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
         )}
-        {CurrentUser?.data?.role !== 'frenchies' && (
+        {!franchise_admin && (
           <NavItem to='/Vendor' icon={FaStore} label='Frenchies' />
         )}
         {CurrentUser?.data?.role !== 'frenchies' && (
@@ -120,7 +119,7 @@ const Sidebar = () => {
           </div>
           <div>
             <p className='font-medium'>
-              {CurrentUser?.data?.role === 'frenchies'
+              {franchise_admin
                 ? 'Admin '
                 : 'Super Admin'}
             </p>

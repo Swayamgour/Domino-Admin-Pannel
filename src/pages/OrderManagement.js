@@ -11,7 +11,9 @@ import {
   FaClock,
   FaChevronDown,
   FaInfoCircle,
-  FaSearch
+  FaSearch,
+  FaPhone,
+  FaEnvelope
 } from 'react-icons/fa'
 import { useLocation } from 'react-router-dom'
 import { useGetOrderByIdQuery } from '../redux/api'
@@ -20,9 +22,7 @@ const OrderDashboard = () => {
   const location = useLocation()
   const itemId = location?.state?.itemId
 
-  const { data, isLoading } = useGetOrderByIdQuery(itemId, {
-    skip: !itemId
-  })
+  const { data, isLoading } = useGetOrderByIdQuery()
 
   const [expandedOrder, setExpandedOrder] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -32,169 +32,51 @@ const OrderDashboard = () => {
     window.scroll(0, 0)
   }, [])
 
-  // Dummy order data with more details
-  const dummyOrders = [
-    {
-      _id: '1',
-      orderId: 'ORD-1001',
-      createdAt: '2023-10-15T14:30:00Z',
-      customerName: 'Rajesh Kumar',
-      customerId: { phone: '+91 9876543210', email: 'rajesh@example.com' },
-      orderStatus: 'Delivered',
-      amount: 1999,
-      discount: 200,
-      totalAmount: 2499,
-      orderItems: [
-        {
-          name: 'Premium Pizza - Large',
-          price: 599,
-          quantity: 2,
-          image: 'https://via.placeholder.com/100x100?text=Pizza'
-        },
-        {
-          name: 'Garlic Bread',
-          price: 199,
-          quantity: 1,
-          image: 'https://via.placeholder.com/100x100?text=Bread'
-        },
-        {
-          name: 'Cold Drink - 1L',
-          price: 99,
-          quantity: 2,
-          image: 'https://via.placeholder.com/100x100?text=Drink'
-        }
-      ],
-      deliveryAddress: '123 Main Street, Kanpur, Uttar Pradesh 208001',
-      paymentMethod: 'Credit Card',
-      paymentStatus: 'Paid',
-      deliveryInstructions: 'Ring bell twice',
-      preparationTime: '25 mins',
-      deliveryTime: '15 mins'
-    },
-    {
-      _id: '2',
-      orderId: 'ORD-1002',
-      createdAt: '2023-10-14T11:20:00Z',
-      customerName: 'Priya Sharma',
-      customerId: { phone: '+91 8765432109', email: 'priya@example.com' },
-      orderStatus: 'Preparing',
-      amount: 1299,
-      discount: 100,
-      totalAmount: 1599,
-      orderItems: [
-        {
-          name: 'Burger Combo',
-          price: 399,
-          quantity: 3,
-          image: 'https://via.placeholder.com/100x100?text=Burger'
-        },
-        {
-          name: 'French Fries',
-          price: 149,
-          quantity: 2,
-          image: 'https://via.placeholder.com/100x100?text=Fries'
-        }
-      ],
-      deliveryAddress: '456 Park Road, Kanpur, Uttar Pradesh 208002',
-      paymentMethod: 'UPI',
-      paymentStatus: 'Paid',
-      specialRequests: 'Extra ketchup packets',
-      preparationTime: '20 mins',
-      estimatedDelivery: '35 mins'
-    },
-    {
-      _id: '3',
-      orderId: 'ORD-1003',
-      createdAt: '2023-10-13T16:45:00Z',
-      customerName: 'Vikram Singh',
-      customerId: { phone: '+91 7654321098', email: 'vikram@example.com' },
-      orderStatus: 'Pending',
-      amount: 2999,
-      discount: 500,
-      totalAmount: 3499,
-      orderItems: [
-        {
-          name: 'Family Meal Deal',
-          price: 1499,
-          quantity: 2,
-          image: 'https://via.placeholder.com/100x100?text=Meal'
-        },
-        {
-          name: 'Dessert Platter',
-          price: 499,
-          quantity: 1,
-          image: 'https://via.placeholder.com/100x100?text=Dessert'
-        }
-      ],
-      deliveryAddress: '789 Market Street, Kanpur, Uttar Pradesh 208003',
-      paymentMethod: 'Wallet',
-      paymentStatus: 'Pending',
-      preparationTime: '30 mins'
-    },
-    {
-      _id: '4',
-      orderId: 'ORD-1004',
-      createdAt: '2023-10-12T09:15:00Z',
-      customerName: 'Ananya Patel',
-      customerId: { phone: '+91 6543210987', email: 'ananya@example.com' },
-      orderStatus: 'Cancelled',
-      amount: 899,
-      discount: 0,
-      totalAmount: 899,
-      orderItems: [
-        {
-          name: 'Breakfast Combo',
-          price: 299,
-          quantity: 3,
-          image: 'https://via.placeholder.com/100x100?text=Breakfast'
-        }
-      ],
-      deliveryAddress: '321 Garden Road, Kanpur, Uttar Pradesh 208004',
-      paymentMethod: 'Net Banking',
-      paymentStatus: 'Failed',
-      cancellationReason: 'Customer requested cancellation'
-    },
-    {
-      _id: '5',
-      orderId: 'ORD-1005',
-      createdAt: '2023-10-11T18:30:00Z',
-      customerName: 'Arjun Mehta',
-      customerId: { phone: '+91 5432109876', email: 'arjun@example.com' },
-      orderStatus: 'Refunded',
-      amount: 1899,
-      discount: 400,
-      totalAmount: 2299,
-      orderItems: [
-        {
-          name: 'Special Thali',
-          price: 499,
-          quantity: 3,
-          image: 'https://via.placeholder.com/100x100?text=Thali'
-        },
-        {
-          name: 'Sweet Box',
-          price: 399,
-          quantity: 1,
-          image: 'https://via.placeholder.com/100x100?text=Sweet'
-        }
-      ],
-      deliveryAddress: '654 Lake View, Kanpur, Uttar Pradesh 208005',
-      paymentMethod: 'Debit Card',
-      paymentStatus: 'Refunded',
-      refundReason: 'Order not delivered on time',
-      refundAmount: 2299
-    }
+  // Static addresses (as requested)
+  const staticAddresses = [
+    "123 Main Street, Kanpur, Uttar Pradesh 208001",
+    "456 Park Road, Kanpur, Uttar Pradesh 208002",
+    "789 Market Street, Kanpur, Uttar Pradesh 208003",
+    "321 Garden Road, Kanpur, Uttar Pradesh 208004",
+    "654 Lake View, Kanpur, Uttar Pradesh 208005"
   ]
 
-  const orders = data?.data || dummyOrders
+  // Static customer data
+  const staticCustomers = [
+    { name: "Rajesh Kumar", phone: "+91 9876543210", email: "rajesh@example.com" },
+    { name: "Priya Sharma", phone: "+91 8765432109", email: "priya@example.com" },
+    { name: "Vikram Singh", phone: "+91 7654321098", email: "vikram@example.com" },
+    { name: "Ananya Patel", phone: "+91 6543210987", email: "ananya@example.com" },
+    { name: "Arjun Mehta", phone: "+91 5432109876", email: "arjun@example.com" }
+  ]
+
+  // Get orders from API or use dummy data
+  const orders = data || []
+
+  // Enhance orders with static data
+  const enhancedOrders = orders.map((order, index) => {
+    const customerIndex = index % staticCustomers.length
+    const addressIndex = index % staticAddresses.length
+    
+    return {
+      ...order,
+      customerName: staticCustomers[customerIndex].name,
+      customerPhone: staticCustomers[customerIndex].phone,
+      customerEmail: staticCustomers[customerIndex].email,
+      deliveryAddress: staticAddresses[addressIndex],
+      orderId: `ORD-${1000 + index}`,
+      orderStatus: order.status || 'PENDING',
+      paymentStatus: order.paymentMode === 'COD' ? 'Pending' : 'Paid'
+    }
+  })
 
   // Filter orders based on search term and status filter
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = enhancedOrders.filter(order => {
     const matchesSearch = 
       order.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (order.customerId?.phone && order.customerId.phone.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (order.customerId?.email && order.customerId.email.toLowerCase().includes(searchTerm.toLowerCase()))
+      (order.customerName && order.customerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (order.customerPhone && order.customerPhone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (order.customerEmail && order.customerEmail.toLowerCase().includes(searchTerm.toLowerCase()))
     
     const matchesStatus = 
       statusFilter === 'All Orders' || 
@@ -209,20 +91,26 @@ const OrderDashboard = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Delivered':
-      case 'Completed':
+      case 'DELIVERED':
+      case 'COMPLETED':
         return 'bg-green-100 text-green-800'
-      case 'Preparing':
-      case 'Pending':
+      case 'PREPARING':
+      case 'PREPARATION':
         return 'bg-yellow-100 text-yellow-800'
-      case 'Cancelled':
-      case 'Failed':
-        return 'bg-red-100 text-red-800'
-      case 'Refunded':
+      case 'PENDING':
         return 'bg-blue-100 text-blue-800'
+      case 'CANCELLED':
+      case 'FAILED':
+        return 'bg-red-100 text-red-800'
+      case 'REFUNDED':
+        return 'bg-purple-100 text-purple-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
+  }
+
+  const formatStatus = (status) => {
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
   }
 
   return (
@@ -266,11 +154,11 @@ const OrderDashboard = () => {
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
                 <option>All Orders</option>
-                <option>Delivered</option>
-                <option>Preparing</option>
-                <option>Pending</option>
-                <option>Cancelled</option>
-                <option>Refunded</option>
+                <option>PENDING</option>
+                <option>PREPARING</option>
+                <option>DELIVERED</option>
+                <option>CANCELLED</option>
+                <option>REFUNDED</option>
               </select>
               <FaChevronDown className='absolute right-3 top-3.5 text-gray-400 text-xs pointer-events-none' />
             </div>
@@ -290,7 +178,7 @@ const OrderDashboard = () => {
                   className='bg-white p-5 rounded-2xl border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-indigo-200'
                 >
                   {/* Header */}
-                  <div onClick={() => toggleOrderExpand(order.orderId)} className='flex flex-col md:flex-row justify-between items-start md:items-center mb-4 cursor-pointer'>
+                  <div onClick={() => toggleOrderExpand(order._id)} className='flex flex-col md:flex-row justify-between items-start md:items-center mb-4 cursor-pointer'>
                     <div>
                       <h3 className='font-bold text-gray-800 flex items-center'>
                         <div className='bg-indigo-100 p-2 rounded-lg mr-3'>
@@ -318,21 +206,21 @@ const OrderDashboard = () => {
                           order.orderStatus
                         )}`}
                       >
-                        {order.orderStatus === 'Delivered' ? (
+                        {order.orderStatus === 'DELIVERED' ? (
                           <FaCheck className='mr-1 text-green-600' />
-                        ) : order.orderStatus === 'Cancelled' ? (
+                        ) : order.orderStatus === 'CANCELLED' ? (
                           <FaClock className='mr-1 text-red-600' />
                         ) : (
                           <FaClock className='mr-1 text-amber-600' />
                         )}
-                        {order.orderStatus}
+                        {formatStatus(order.orderStatus)}
                       </span>
                       <button
-                        onClick={() => toggleOrderExpand(order.orderId)}
+                        onClick={() => toggleOrderExpand(order._id)}
                         className='p-2 text-gray-500 hover:text-indigo-600 transition-colors'
                       >
                         <FaChevronDown
-                          className={`transition-transform ${expandedOrder === order.orderId
+                          className={`transition-transform ${expandedOrder === order._id
                             ? 'rotate-180'
                             : ''
                             }`}
@@ -350,47 +238,39 @@ const OrderDashboard = () => {
                       <p className='text-gray-800 font-semibold'>
                         {order.customerName}
                       </p>
-                      <p className='text-gray-500 text-sm mt-1'>
-                        {order.customerId?.phone || 'N/A'}
+                      <p className='text-gray-500 text-sm mt-1 flex items-center'>
+                        <FaPhone className='mr-1' />
+                        {order.customerPhone}
                       </p>
-                      <p className='text-gray-500 text-sm'>
-                        {order.customerId?.email || 'N/A'}
+                      <p className='text-gray-500 text-sm flex items-center'>
+                        <FaEnvelope className='mr-1' />
+                        {order.customerEmail}
                       </p>
                     </div>
 
                     <div className='bg-gray-50 p-4 rounded-lg'>
                       <h4 className='text-sm font-medium text-gray-500 mb-2 flex items-center'>
-                        <FaMapMarkerAlt className='mr-2 text-indigo-600' />{' '}
-                        Delivery
+                        <FaMapMarkerAlt className='mr-2 text-indigo-600' /> Delivery
                       </h4>
                       <p className='text-gray-800 text-sm'>
                         {order.deliveryAddress}
                       </p>
-                      {order.deliveryInstructions && (
-                        <p className='text-gray-500 text-xs mt-1'>
-                          <strong>Instructions:</strong>{' '}
-                          {order.deliveryInstructions}
-                        </p>
-                      )}
                     </div>
 
                     <div className='bg-gray-50 p-4 rounded-lg'>
                       <h4 className='text-sm font-medium text-gray-500 mb-2 flex items-center'>
-                        <FaMoneyBillWave className='mr-2 text-indigo-600' />{' '}
-                        Payment
+                        <FaMoneyBillWave className='mr-2 text-indigo-600' /> Payment
                       </h4>
                       <p className='text-gray-800 font-semibold'>
-                        ₹{order.totalAmount}
+                        ₹{order.grandTotal}
                       </p>
                       <p className='text-gray-500 text-sm'>
-                        Method: {order.paymentMethod}
+                        Method: {order.paymentMode}
                       </p>
                       <p
                         className={`text-xs font-medium mt-1 ${order.paymentStatus === 'Paid'
                           ? 'text-green-600'
-                          : order.paymentStatus === 'Pending'
-                            ? 'text-yellow-600'
-                            : 'text-red-600'
+                          : 'text-yellow-600'
                           }`}
                       >
                         Status: {order.paymentStatus}
@@ -399,7 +279,7 @@ const OrderDashboard = () => {
                   </div>
 
                   {/* Expanded Details */}
-                  {expandedOrder === order.orderId && (
+                  {expandedOrder === order._id && (
                     <div className='mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200'>
                       <h4 className='text-sm font-medium text-gray-700 mb-3 flex items-center'>
                         <FaInfoCircle className='mr-2 text-indigo-600' />
@@ -413,28 +293,26 @@ const OrderDashboard = () => {
                             ORDER ITEMS
                           </h5>
                           <div className='space-y-3'>
-                            {order.orderItems.map((item, idx) => (
+                            {order.items.map((item, idx) => (
                               <div
                                 key={idx}
                                 className='flex justify-between items-center p-2 bg-white rounded border border-gray-100'
                               >
                                 <div className='flex items-center gap-3'>
-                                  <img
-                                    src={item.image || '/image/pizza.jpg'}
-                                    alt={item.name}
-                                    className='w-12 h-12 rounded object-cover border border-gray-300'
-                                  />
+                                  <div className='w-12 h-12 rounded bg-gray-200 flex items-center justify-center border border-gray-300'>
+                                    <span className='text-gray-500 text-sm'>🍕</span>
+                                  </div>
                                   <div>
                                     <p className='font-medium text-gray-800'>
                                       {item.name}
                                     </p>
                                     <p className='text-gray-500 text-sm'>
-                                      ₹{item.price} × {item.quantity}
+                                      ₹{item.unitPrice} × {item.quantity}
                                     </p>
                                   </div>
                                 </div>
                                 <span className='font-medium'>
-                                  ₹{item.price * item.quantity}
+                                  ₹{item.unitPrice * item.quantity}
                                 </span>
                               </div>
                             ))}
@@ -449,59 +327,53 @@ const OrderDashboard = () => {
                           <div className='bg-white p-4 rounded border border-gray-100'>
                             <div className='space-y-2'>
                               <div className='flex justify-between'>
-                                <span className='text-gray-700'>
-                                  Subtotal:
-                                </span>
-                                <span>₹{order.amount}</span>
+                                <span className='text-gray-700'>Subtotal:</span>
+                                <span>₹{order.subTotal}</span>
                               </div>
                               <div className='flex justify-between'>
-                                <span className='text-gray-700'>
-                                  Discount:
-                                </span>
-                                <span className='text-green-600'>
-                                  - ₹{order.discount}
-                                </span>
+                                <span className='text-gray-700'>Tax:</span>
+                                <span>₹{order.tax}</span>
                               </div>
                               <div className='flex justify-between'>
-                                <span className='text-gray-700'>
-                                  Tax (18%):
-                                </span>
-                                <span>
-                                  ₹{((order.totalAmount - order.discount) * 0.18).toFixed(2)}
-                                </span>
+                                <span className='text-gray-700'>Delivery Fee:</span>
+                                <span>₹{order.deliveryFee}</span>
                               </div>
+                              {order.discount > 0 && (
+                                <div className='flex justify-between'>
+                                  <span className='text-gray-700'>Discount:</span>
+                                  <span className='text-green-600'>- ₹{order.discount}</span>
+                                </div>
+                              )}
                               <div className='flex justify-between border-t border-gray-300 pt-2 mt-2 font-bold'>
-                                <span>Total:</span>
-                                <span className='text-indigo-700'>
-                                  ₹{order.totalAmount}
-                                </span>
+                                <span>Grand Total:</span>
+                                <span className='text-indigo-700'>₹{order.grandTotal}</span>
                               </div>
                             </div>
                           </div>
 
                           {/* Additional Info */}
-                          {(order.specialRequests || order.cancellationReason || order.refundReason) && (
-                            <div className='mt-4 p-3 bg-yellow-50 rounded border border-yellow-100'>
-                              <h6 className='text-xs font-medium text-yellow-800 mb-1'>
-                                ADDITIONAL INFORMATION
-                              </h6>
-                              {order.specialRequests && (
-                                <p className='text-xs text-yellow-700'>
-                                  <strong>Special Requests:</strong> {order.specialRequests}
-                                </p>
-                              )}
-                              {order.cancellationReason && (
-                                <p className='text-xs text-red-700'>
-                                  <strong>Cancellation Reason:</strong> {order.cancellationReason}
-                                </p>
-                              )}
-                              {order.refundReason && (
-                                <p className='text-xs text-blue-700'>
-                                  <strong>Refund Reason:</strong> {order.refundReason}
-                                </p>
-                              )}
-                            </div>
-                          )}
+                          <div className='mt-4 p-3 bg-blue-50 rounded border border-blue-100'>
+                            <h6 className='text-xs font-medium text-blue-800 mb-1'>
+                              ORDER INFORMATION
+                            </h6>
+                            <p className='text-xs text-blue-700'>
+                              <strong>Order ID:</strong> {order._id}
+                            </p>
+                            <p className='text-xs text-blue-700'>
+                              <strong>Customer ID:</strong> {order.customerId}
+                            </p>
+                            <p className='text-xs text-blue-700'>
+                              <strong>Franchise ID:</strong> {order.franchiseId}
+                            </p>
+                            <p className='text-xs text-blue-700'>
+                              <strong>Created:</strong> {new Date(order.createdAt).toLocaleString()}
+                            </p>
+                            {order.updatedAt !== order.createdAt && (
+                              <p className='text-xs text-blue-700'>
+                                <strong>Updated:</strong> {new Date(order.updatedAt).toLocaleString()}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
