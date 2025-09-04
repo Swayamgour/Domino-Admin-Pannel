@@ -24,6 +24,7 @@ import {
 import { getUserLocation } from '../utils/getUserLocation'
 import { useDispatch, useSelector } from 'react-redux'
 import { setLocation } from '../redux/globalSlice'
+import { useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
   // Mock data for the dashboard
@@ -57,8 +58,9 @@ const Dashboard = () => {
     ]
   })
 
- 
-  
+  const navigate = useNavigate()
+
+
 
 
 
@@ -102,7 +104,7 @@ const Dashboard = () => {
           </button>
 
           {/* User Avatar */}
-          <div className='ml-3 flex items-center'>
+          <div onClick={()=>navigate('/ProfilePage')} className='ml-3 flex items-center cursor-pointer'>
             <div className='h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold'>
               AK
             </div>
@@ -115,7 +117,7 @@ const Dashboard = () => {
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6'>
         {/* Total Orders Today */}
-        <div className='bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 p-5 transition-all duration-300 hover:shadow-md'>
+        <div onClick={()=>navigate('/OrderManagement')}  className=' bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 p-5 transition-all duration-300 hover:shadow-md'>
           <div className='flex items-center justify-between'>
             <div>
               <p className='text-gray-500 text-sm font-medium'>
@@ -300,7 +302,7 @@ const Dashboard = () => {
         {/* Active Vendors */}
         <div className='bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-100 p-5 transition-all duration-300 hover:shadow-md'>
           <div className='flex items-center justify-between mb-5'>
-            <h2 className='text-lg font-bold text-gray-800'>Active Vendors</h2>
+            <h2 className='text-lg font-bold text-gray-800'>Active Frenchies</h2>
             <div className='bg-pink-100 p-2.5 rounded-lg'>
               <HiUserGroup className='h-5 w-5 text-pink-600' />
             </div>
@@ -342,7 +344,9 @@ const Dashboard = () => {
           <h2 className='text-lg font-bold text-gray-800'>
             Top Performing Stores
           </h2>
-          <button className='mt-3 sm:mt-0 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-300 flex items-center'>
+          <button
+            onClick={() => navigate('/TopPerformingStores')}
+            className='mt-3 sm:mt-0 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-300 flex items-center'>
             View All Stores
             <HiArrowNarrowRight className='h-4 w-4 ml-2' />
           </button>
@@ -396,9 +400,13 @@ const Dashboard = () => {
       </div>
 
       {/* Footer */}
-      <footer className='mt-8 text-center text-gray-500 text-sm'>
-        <p>© 2023 Dashboard Analytics. All rights reserved.</p>
+      <footer className="mt-8 text-center text-gray-500 text-sm">
+        <p>© 2025 Dashboard Analytics. All rights reserved.</p>
+        <p>Made by <span
+          onClick={() => window.open("https://riveyrainfotech.com/", "_blank")}
+          className="font-medium text-gray-700 cursor-pointer">Riveyra Infotech</span></p>
       </footer>
+
     </div>
   )
 }

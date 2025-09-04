@@ -96,9 +96,9 @@ function ChangePassword ({ passwordForm, setPasswordForm }) {
   return (
     <>
       {passwordForm && (
-        <div className='fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-end'>
+        <div className='fixed inset-0 bg-black bg-opacity-40 z-50 flex justify-center items-center'>
           {result?.isLoading && <Loader />}
-          <div className='bg-white rounded-t-2xl shadow-lg p-6 w-full max-w-lg transition-all transform duration-300 animate-slide-up'>
+          <div className='bg-white rounded-2xl shadow-lg p-6 w-full max-w-lg transition-all transform duration-300 animate-slide-up'>
             <div className='bg-white rounded-2xl shadow-lg p-6'>
               <div className='flex justify-between items-center'>
                 <h3 className='text-xl font-bold text-gray-800 mb-6 flex items-center'>

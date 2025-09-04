@@ -5,7 +5,7 @@ import { setLocation } from '../redux/globalSlice'
 import { getUserLocation } from '../utils/getUserLocation'
 import { useEffect } from 'react'
 
-function Navbar () {
+function Navbar() {
   const navigate = useNavigate()
 
   const dispatch = useDispatch()
@@ -55,7 +55,11 @@ function Navbar () {
           </div>
         </div> */}
 
-        <AnchorTemporaryDrawer />
+        <div className="block lg:hidden">
+          <AnchorTemporaryDrawer />
+        </div>
+
+
       </div>
     </nav>
   )

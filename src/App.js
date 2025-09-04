@@ -18,6 +18,7 @@ import { Toaster } from 'react-hot-toast'
 import ProfilePage from './pages/ProfilePage'
 import OrderManagementSystem from './component/OrderManagementSystem'
 import FrencieOrder from './pages/FrencieOrder'
+import TopPerformingStores from './pages/TopPerformingStores'
 
 function Layout () {
   const location = useLocation()
@@ -112,6 +113,14 @@ function Layout () {
               element={
                 <AuthGuard>
                   <OrderManagementSystem />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path='/TopPerformingStores'
+              element={
+                <AuthGuard>
+                  <TopPerformingStores />
                 </AuthGuard>
               }
             />

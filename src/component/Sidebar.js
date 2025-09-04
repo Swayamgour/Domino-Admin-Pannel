@@ -53,9 +53,9 @@ const Sidebar = () => {
     try {
       Cookies.remove('accessToken') // Clear token
 
-      setTimeout(() => {
-        window.location.reload() // Reload after navigation
-      }, 100)
+      // setTimeout(() => {
+      //   window.location.reload() // Reload after navigation
+      // }, 1000)
       navigate('/') // Redirect to home
     } catch (error) {
       console.error('Logout failed:', error)
@@ -91,7 +91,7 @@ const Sidebar = () => {
           <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
         )}
         {CurrentUser?.data?.role !== 'frenchies' && (
-          <NavItem to='/Vendor' icon={FaStore} label='Frenchie' />
+          <NavItem to='/Vendor' icon={FaStore} label='Frenchies' />
         )}
         {CurrentUser?.data?.role !== 'frenchies' && (
           <NavItem

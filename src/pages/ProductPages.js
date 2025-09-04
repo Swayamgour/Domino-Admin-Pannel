@@ -90,7 +90,7 @@ const ProductPages = () => {
 
   // State management
 
-  
+
 
   useEffect(() => {
     if (resultDelete?.isSuccess) {
@@ -168,11 +168,11 @@ const ProductPages = () => {
       products.map(product =>
         product.id === id
           ? {
-              ...product,
-              status:
-                product.status === 'in-stock' ? 'out-of-stock' : 'in-stock',
-              stock: product.status === 'in-stock' ? 0 : 50
-            }
+            ...product,
+            status:
+              product.status === 'in-stock' ? 'out-of-stock' : 'in-stock',
+            stock: product.status === 'in-stock' ? 0 : 50
+          }
           : product
       )
     )
@@ -499,11 +499,10 @@ const ProductPages = () => {
                   </div>
                   <span
                     onClick={() => toggleStockStatus(product.id)}
-                    className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full cursor-pointer ${
-                      product.stock === 'In Stock'
+                    className={`px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full cursor-pointer ${product.stock === 'In Stock'
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
-                    }`}
+                      }`}
                   >
                     {product.stock === 'In Stock' ? 'In Stock' : 'Out of Stock'}
                   </span>
@@ -625,7 +624,8 @@ const ProductPages = () => {
                     </td>
                     <td className='px-4 py-4 whitespace-nowrap'>
                       <span className='px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800'>
-                        {product.category.name}
+                        {console.log(product)}
+                        {product?.category?.name}
                       </span>
                     </td>
                     {/* <td className='px-4 py-4 whitespace-nowrap text-sm text-gray-500'>
@@ -640,11 +640,10 @@ const ProductPages = () => {
                     <td className='px-4 py-4 whitespace-nowrap'>
                       <span
                         onClick={() => toggleStockStatus(product.id)}
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${
-                          product.stock === 'In Stock'
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full cursor-pointer ${product.stock === 'In Stock'
                             ? 'bg-green-100 text-green-800'
                             : 'bg-red-100 text-red-800'
-                        }`}
+                          }`}
                       >
                         {product.stock === 'In Stock'
                           ? 'In Stock'

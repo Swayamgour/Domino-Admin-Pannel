@@ -23,7 +23,7 @@ const VendorManagement = () => {
   const [createAdminBySuperAdmin, result] = useCreateAdminBySuperAdminMutation()
 
   const [page, setPage] = useState(1)
-  const [vendors, setVendors] = useState([])
+  const [Frenchies, setFrenchies] = useState([])
   const [hasMore, setHasMore] = useState(true)
   const loaderRef = useRef()
 
@@ -31,7 +31,7 @@ const VendorManagement = () => {
 
   useEffect(() => {
     if (data?.data?.length) {
-      setVendors(prev => [...prev, ...data.data])
+      setFrenchies(prev => [...prev, ...data.data])
       if (data.data.length < 10) {
         setHasMore(false)
       }
@@ -60,9 +60,9 @@ const VendorManagement = () => {
     }
   }, [hasMore, isFetching])
 
-  console.log(vendors)
+  // console.log(Frenchies)
 
-  const [editingVendor, setEditingVendor] = useState(null)
+  // const [editingVendor, setEditingVendor] = useState(null)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [filter, setFilter] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -70,8 +70,8 @@ const VendorManagement = () => {
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [newProduct, setNewProduct] = useState('')
 
-  // Filter vendors
-  const filteredVendors = vendors.filter(vendor => {
+  // Filter Frenchies
+  const filteredFrenchies = Frenchies.filter(vendor => {
     // Status filter
     const statusMatch = filter === 'all' || vendor.status === filter
 
@@ -87,47 +87,88 @@ const VendorManagement = () => {
 
   // Approve a vendor
   const approveVendor = id => {
-    setVendors(
-      vendors.map(v => (v.id === id ? { ...v, status: 'approved' } : v))
+    setFrenchies(
+      Frenchies.map(v => (v.id === id ? { ...v, status: 'approved' } : v))
     )
   }
 
   // Reject a vendor
   const rejectVendor = id => {
-    setVendors(
-      vendors.map(v => (v.id === id ? { ...v, status: 'rejected' } : v))
+    setFrenchies(
+      Frenchies.map(v => (v.id === id ? { ...v, status: 'rejected' } : v))
     )
   }
 
   // Delete a vendor
   const deleteVendor = id => {
-    setVendors(vendors.filter(v => v.id !== id))
+    setFrenchies(Frenchies.filter(v => v.id !== id))
   }
 
   // Open vendor form
 
-  console.log(editingVendor)
+  // console.log(editingVendor)
 
   // Handle form input changes
-  const handleInputChange = e => {
-    const { name, value } = e.target
 
-    if (name.startsWith('contact.')) {
-      const contactField = name.split('.')[1]
-      setEditingVendor({
-        ...editingVendor,
+
+  const [states, setStates] = useState([]);
+  const [editingVendor, setEditingVendor] = useState({ state: "" });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+
+    if (name.startsWith("contact.")) {
+      const contactField = name.split(".")[1];
+      setEditingVendor((prev) => ({
+        ...prev,
         contact: {
-          ...editingVendor.contact,
-          [contactField]: value
-        }
-      })
+          ...prev.contact, // keep old contact fields
+          [contactField]: value,
+        },
+      }));
     } else {
-      setEditingVendor({
-        ...editingVendor,
-        [name]: value
-      })
+      setEditingVendor((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
     }
-  }
+  };
+
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      const res = await fetch("https://countriesnow.space/api/v0.1/countries/states", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ country: "India" }),
+      });
+      const data = await res.json();
+      setStates(data.data.states || []);
+    };
+    fetchStates();
+  }, []);
+
+
+  const [cities, setCities] = useState([]);
+
+  useEffect(() => {
+    if (editingVendor?.state) {
+      const fetchCities = async () => {
+        const res = await fetch("https://countriesnow.space/api/v0.1/countries/state/cities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ country: "India", state: editingVendor?.state }),
+        });
+        const data = await res.json();
+        setCities(data.data || []);
+      };
+      fetchCities();
+    }
+  }, [editingVendor?.state]);
+
+
+
+
 
   const openVendorForm = (vendor = null) => {
     setEditingVendor(
@@ -168,21 +209,23 @@ const VendorManagement = () => {
       ownerName: editingVendor?.contact?.person
     }
 
+    console.log(body)
+
     await createAdminBySuperAdmin(body)
 
     // if (editingVendor.id) {
     //   // Update existing vendor
-    //   setVendors(
-    //     vendors.map(v => (v.id === editingVendor.id ? editingVendor : v))
+    //   setFrenchies(
+    //     Frenchies.map(v => (v.id === editingVendor.id ? editingVendor : v))
     //   )
     // } else {
     //   // Add new vendor
     //   const newVendor = {
     //     ...editingVendor,
-    //     id: vendors.length + 1,
+    //     id: Frenchies.length + 1,
     //     registrationDate: new Date().toISOString().split('T')[0]
     //   }
-    //   setVendors([...vendors, newVendor])
+    //   setFrenchies([...Frenchies, newVendor])
     // }
 
     setIsFormOpen(false)
@@ -203,8 +246,8 @@ const VendorManagement = () => {
         products: [...selectedVendor.products, newProduct]
       }
 
-      setVendors(
-        vendors.map(v => (v.id === selectedVendor.id ? updatedVendor : v))
+      setFrenchies(
+        Frenchies.map(v => (v.id === selectedVendor.id ? updatedVendor : v))
       )
       setSelectedVendor(updatedVendor)
       setNewProduct('')
@@ -218,19 +261,19 @@ const VendorManagement = () => {
       products: selectedVendor.products.filter(p => p !== product)
     }
 
-    setVendors(
-      vendors.map(v => (v.id === selectedVendor.id ? updatedVendor : v))
+    setFrenchies(
+      Frenchies.map(v => (v.id === selectedVendor.id ? updatedVendor : v))
     )
     setSelectedVendor(updatedVendor)
   }
 
   // Sales chart data
   const salesChartData = {
-    labels: vendors.filter(v => v.status === 'approved').map(v => v.name),
+    labels: Frenchies.filter(v => v.status === 'approved').map(v => v.name),
     datasets: [
       {
         label: 'Sales (₹)',
-        data: vendors.filter(v => v.status === 'approved').map(v => v.sales),
+        data: Frenchies.filter(v => v.status === 'approved').map(v => v.sales),
         backgroundColor: 'rgba(79, 70, 229, 0.7)',
         borderColor: 'rgba(79, 70, 229, 1)',
         borderWidth: 1
@@ -264,7 +307,7 @@ const VendorManagement = () => {
     }
   }
 
-  console.log(result)
+  // console.log(result)
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-8'>
@@ -274,10 +317,10 @@ const VendorManagement = () => {
         <div className='flex flex-col md:flex-row md:items-center justify-between mb-8'>
           <div>
             <h1 className='text-3xl md:text-4xl font-bold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600'>
-              Vendor Management
+              Frenchies Management
             </h1>
             <p className='text-gray-600 mt-2 max-w-2xl mx-auto'>
-              Manage all your vendor partners in one place with our intuitive
+              Manage all your Frenchies partners in one place with our intuitive
               dashboard
             </p>
           </div>
@@ -285,7 +328,7 @@ const VendorManagement = () => {
             onClick={() => openVendorForm()}
             className='mt-4 md:mt-0 px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5'
           >
-            + Add New Vendor
+            + Add New Frenchies
           </button>
         </div>
 
@@ -310,7 +353,7 @@ const VendorManagement = () => {
                 </svg>
               </div>
               <div className='ml-4'>
-                <p className='text-sm text-gray-500'>Total Vendors</p>
+                <p className='text-sm text-gray-500'>Total Frenchies</p>
                 <p className='text-2xl font-bold text-gray-800'>
                   {data?.totalDocs}
                 </p>
@@ -337,7 +380,7 @@ const VendorManagement = () => {
                 </svg>
               </div>
               <div className='ml-4'>
-                <p className='text-sm text-gray-500'>Approved Vendors</p>
+                <p className='text-sm text-gray-500'>Approved Frenchies</p>
                 <p className='text-2xl font-bold text-gray-800'>
                   {data?.totalApproved}
                 </p>
@@ -366,7 +409,7 @@ const VendorManagement = () => {
               <div className='ml-4'>
                 <p className='text-sm text-gray-500'>Pending Approval</p>
                 <p className='text-2xl font-bold text-gray-800'>
-                  {vendors.totalPending || 0}
+                  {Frenchies.totalPending || 0}
                 </p>
               </div>
             </div>
@@ -394,7 +437,7 @@ const VendorManagement = () => {
                 <p className='text-sm text-gray-500'>Total Sales</p>
                 <p className='text-2xl font-bold text-gray-800'>
                   ₹
-                  {vendors
+                  {Frenchies
                     .reduce((sum, vendor) => sum + vendor.salesCount, 0)
                     .toLocaleString()}
                 </p>
@@ -403,81 +446,14 @@ const VendorManagement = () => {
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div className='bg-white rounded-2xl shadow-xl p-6 mb-8'>
-          <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-            {/* Search */}
-            <div className='md:col-span-2'>
-              <label className='block text-gray-700 text-sm font-medium mb-2'>
-                Search Vendors
-              </label>
-              <div className='relative'>
-                <input
-                  type='text'
-                  placeholder='Search by name, contact person, or city...'
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                  className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                />
-                <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  className='h-5 w-5 absolute right-3 top-3.5 text-gray-400'
-                  fill='none'
-                  viewBox='0 0 24 24'
-                  stroke='currentColor'
-                >
-                  <path
-                    strokeLinecap='round'
-                    strokeLinejoin='round'
-                    strokeWidth={2}
-                    d='M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z'
-                  />
-                </svg>
-              </div>
-            </div>
 
-            {/* Status Filter */}
-            <div>
-              <label className='block text-gray-700 text-sm font-medium mb-2'>
-                Status
-              </label>
-              <select
-                value={filter}
-                onChange={e => setFilter(e.target.value)}
-                className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-              >
-                <option value='all'>All Status</option>
-                <option value='approved'>Approved</option>
-                <option value='pending'>Pending</option>
-                {/* <option value='rejected'>Rejected</option> */}
-              </select>
-            </div>
-
-            {/* Sales Chart Toggle */}
-            <div>
-              <label className='block text-gray-700 text-sm font-medium mb-2'>
-                Actions
-              </label>
-              <button
-                className='w-full p-3 bg-indigo-100 text-indigo-700 font-medium rounded-xl hover:bg-indigo-200'
-                onClick={() =>
-                  document
-                    .getElementById('salesChart')
-                    .scrollIntoView({ behavior: 'smooth' })
-                }
-              >
-                View Sales Chart
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Vendors Table */}
+        {/* Frenchies Table */}
+        {console.log(data === undefined)}
         <div>
           <div className='overflow-x-auto'>
             <VendorCard data={data} />
 
-            {data?.data?.length === 0 && (
+            {data != undefined && data?.data?.length === 0 && (
               <div className='text-center py-12'>
                 <svg
                   xmlns='http://www.w3.org/2000/svg'
@@ -494,7 +470,7 @@ const VendorManagement = () => {
                   />
                 </svg>
                 <h3 className='mt-4 text-lg font-medium text-gray-900'>
-                  No vendors found
+                  No Frenchies found
                 </h3>
                 <p className='mt-1 text-gray-500'>
                   Try adjusting your search or filter criteria
@@ -570,13 +546,12 @@ const VendorManagement = () => {
                       <div>
                         <p className='text-sm text-gray-500'>Status</p>
                         <p
-                          className={`font-medium ${
-                            selectedVendor.status === 'approved'
-                              ? 'text-green-600'
-                              : selectedVendor.status === 'pending'
+                          className={`font-medium ${selectedVendor.status === 'approved'
+                            ? 'text-green-600'
+                            : selectedVendor.status === 'pending'
                               ? 'text-yellow-600'
                               : 'text-red-600'
-                          }`}
+                            }`}
                         >
                           {selectedVendor.status.charAt(0).toUpperCase() +
                             selectedVendor.status.slice(1)}
@@ -608,7 +583,7 @@ const VendorManagement = () => {
                       Product Access
                     </h4>
                     <p className='text-sm text-gray-500 mb-4'>
-                      Vendors can only add/edit products assigned to them
+                      Frenchies can only add/edit products assigned to them
                     </p>
 
                     <div className='mb-6'>
@@ -720,11 +695,10 @@ const VendorManagement = () => {
                             <svg
                               key={i}
                               xmlns='http://www.w3.org/2000/svg'
-                              className={`h-5 w-5 ${
-                                i < Math.floor(selectedVendor.rating)
-                                  ? 'text-yellow-400'
-                                  : 'text-gray-300'
-                              }`}
+                              className={`h-5 w-5 ${i < Math.floor(selectedVendor.rating)
+                                ? 'text-yellow-400'
+                                : 'text-gray-300'
+                                }`}
                               viewBox='0 0 20 20'
                               fill='currentColor'
                             >
@@ -825,7 +799,7 @@ const VendorManagement = () => {
             <div className='p-6'>
               <div className='flex justify-between items-center mb-6'>
                 <h3 className='text-2xl font-bold text-gray-800'>
-                  {editingVendor.id ? 'Edit Vendor' : 'Add New Vendor'}
+                  {editingVendor.id ? 'Edit Vendor' : 'Add New Frenchies'}
                 </h3>
                 <button
                   onClick={() => setIsFormOpen(false)}
@@ -933,58 +907,46 @@ const VendorManagement = () => {
                   </div>
 
                   <div>
-                    <label className='block text-gray-700 mb-2'>
-                      City <span className='text-gray-400'>(Optional)</span>
-                    </label>
-                    <input
-                      type='text'
-                      name='city'
-                      value={editingVendor.city}
-                      onChange={handleInputChange}
-                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-                    />
-                  </div>
-
-                  <div>
-                    <label className='block text-gray-700 mb-2'>State</label>
-                    <input
-                      type='text'
-                      name='state'
+                    <label className="block text-gray-700 mb-2">State</label>
+                    <select
+                      name="state"
                       value={editingVendor.state}
                       onChange={handleInputChange}
-                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       required
-                    />
+                    >
+                      <option value="">Select State</option>
+                      {states.map((s) => (
+                        <option key={s.name} value={s.name}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
-                    <label className='block text-gray-700 mb-2'>
-                      Country <span className='text-gray-400'>(Optional)</span>
+                    <label className="block text-gray-700 mb-2">
+                      City <span className="text-gray-400">(Optional)</span>
                     </label>
                     <select
-                      name='country'
-                      value={editingVendor.country}
+                      name="city"
+                      value={editingVendor.city || ""}
                       onChange={handleInputChange}
-                      className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
+                      className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
-                      <option value=''>Select Country</option>
-                      <option value='India'>India</option>
-                      <option value='United States'>United States</option>
-                      <option value='Canada'>Canada</option>
-                      <option value='United Kingdom'>United Kingdom</option>
-                      <option value='Australia'>Australia</option>
-                      <option value='Germany'>Germany</option>
-                      <option value='France'>France</option>
-                      <option value='Japan'>Japan</option>
-                      <option value='China'>China</option>
-                      <option value='Brazil'>Brazil</option>
-                      <option value='South Africa'>South Africa</option>
-                      <option value='UAE'>UAE</option>
-                      <option value='Singapore'>Singapore</option>
-                      <option value='Russia'>Russia</option>
-                      <option value='Mexico'>Mexico</option>
+                      <option value="">Select City</option>
+                      {cities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
                     </select>
                   </div>
+
+
+
+
+
                 </div>
 
                 {/* Footer buttons */}
@@ -1003,8 +965,8 @@ const VendorManagement = () => {
                     {result?.isLoading
                       ? 'Loading...'
                       : editingVendor.id
-                      ? 'Update Vendor'
-                      : 'Add Vendor'}
+                        ? 'Update Vendor'
+                        : 'Add Vendor'}
                   </button>
                 </div>
               </form>

@@ -1,15 +1,31 @@
-import React, {  useState } from 'react'
+import React, { useState } from 'react'
 import Switch from '@mui/material/Switch'
 import { useActiveFrenchiesMutation } from '../redux/api'
 import CircularProgress from '@mui/material/CircularProgress'
+import {
+  HiOutlineSearch,
+  HiOutlineFilter,
+  HiOutlineX,
+  HiOutlineUser,
+  HiOutlineLocationMarker,
+  HiOutlineCurrencyRupee,
+  HiOutlineCalendar
+} from 'react-icons/hi'
+import { useNavigate } from 'react-router-dom'
 
 const VendorCard = ({ data }) => {
-  const vendors = data?.data || []
-
-//   const [open, setOpen] = useState(false)
-//   const [checked, setChecked] = React.useState(true)
+  const Frenchies = data?.data || []
   const [updateAdmin, result] = useActiveFrenchiesMutation()
   const [loadingId, setLoadingId] = useState(null)
+
+  const navigate = useNavigate()
+
+  // State for search and filters
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [cityFilter, setCityFilter] = useState('all')
+  const [stateFilter, setStateFilter] = useState('all')
+  const [showFilters, setShowFilters] = useState(false)
 
   const handleChange = async frenchiesID => {
     setLoadingId(frenchiesID)
@@ -32,9 +48,6 @@ const VendorCard = ({ data }) => {
     }
   }
 
-  //   console.log()
-
-  // Function to get status color
   const getStatusColor = status => {
     switch (status.toLowerCase()) {
       case 'approved':
@@ -48,16 +61,196 @@ const VendorCard = ({ data }) => {
     }
   }
 
-  return (
-    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 md:p-8'>
-      <div className='max-w-7xl mx-auto'>
-        {/* */}
+  // Filter Frenchies based on search term and filters
+  const filteredFrenchies = Frenchies.filter(Frenchies => {
+    // Search term filter
+    const matchesSearch =
+      searchTerm === '' ||
+      Frenchies.frenchieName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      Frenchies.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      Frenchies.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      Frenchies.phone.includes(searchTerm) ||
+      Frenchies.frenchiesID.toLowerCase().includes(searchTerm.toLowerCase())
 
+    // Status filter
+    const matchesStatus =
+      statusFilter === 'all' ||
+      Frenchies.status.toLowerCase() === statusFilter.toLowerCase()
+
+    // City filter
+    const matchesCity =
+      cityFilter === 'all' ||
+      Frenchies.city.toLowerCase() === cityFilter.toLowerCase()
+
+    // State filter
+    const matchesState =
+      stateFilter === 'all' ||
+      Frenchies.state.toLowerCase() === stateFilter.toLowerCase()
+
+    return matchesSearch && matchesStatus && matchesCity && matchesState
+  })
+
+  // Get unique values for filter dropdowns
+  const statusOptions = ['all', ...new Set(Frenchies.map(v => v.status.toLowerCase()))]
+  const cityOptions = ['all', ...new Set(Frenchies.map(v => v.city).filter(Boolean))]
+  const stateOptions = ['all', ...new Set(Frenchies.map(v => v.state).filter(Boolean))]
+
+  // Clear all filters
+  const clearFilters = () => {
+    setSearchTerm('')
+    setStatusFilter('all')
+    setCityFilter('all')
+    setStateFilter('all')
+  }
+
+  // Check if any filter is active
+  const isFilterActive = searchTerm !== '' || statusFilter !== 'all' || cityFilter !== 'all' || stateFilter !== 'all'
+
+  return (
+    <div className='min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 '>
+      <div className='max-w-7xl mx-auto'>
+        {/* Search and Filter Header */}
+        <div className='bg-white rounded-2xl shadow-lg p-6 mb-6'>
+          <div className='flex flex-col md:flex-row gap-4 items-center justify-between'>
+            <div className='relative w-full md:w-1/3'>
+              <HiOutlineSearch className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5' />
+              <input
+                type='text'
+                placeholder='Search Frenchies...'
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent'
+              />
+            </div>
+
+            <div className='flex gap-2 w-full md:w-auto'>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className='flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors'
+              >
+                <HiOutlineFilter className='h-5 w-5' />
+                Filters
+                {isFilterActive && (
+                  <span className='bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center'>
+                    !
+                  </span>
+                )}
+              </button>
+
+              {isFilterActive && (
+                <button
+                  onClick={clearFilters}
+                  className='flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors'
+                >
+                  <HiOutlineX className='h-5 w-5' />
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Expanded Filters */}
+          {showFilters && (
+            <div className='mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200'>
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500'
+                >
+                  {statusOptions.map(status => (
+                    <option key={status} value={status}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>City</label>
+                <select
+                  value={cityFilter}
+                  onChange={(e) => setCityFilter(e.target.value)}
+                  className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500'
+                >
+                  {cityOptions.map(city => (
+                    <option key={city} value={city}>
+                      {city === 'all' ? 'All Cities' : city}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className='block text-sm font-medium text-gray-700 mb-2'>State</label>
+                <select
+                  value={stateFilter}
+                  onChange={(e) => setStateFilter(e.target.value)}
+                  className='w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500'
+                >
+                  {stateOptions.map(state => (
+                    <option key={state} value={state}>
+                      {state === 'all' ? 'All States' : state}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Results Count */}
+        <div className='mb-4 flex justify-between items-center'>
+          <p className='text-gray-600'>
+            Showing {filteredFrenchies.length} of {Frenchies.length} Frenchies
+          </p>
+
+          {isFilterActive && (
+            <div className='flex gap-2 flex-wrap'>
+              {searchTerm && (
+                <span className='bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full flex items-center gap-1'>
+                  Search: "{searchTerm}"
+                  <button onClick={() => setSearchTerm('')} className='text-blue-600 hover:text-blue-800'>
+                    <HiOutlineX className='h-3 w-3' />
+                  </button>
+                </span>
+              )}
+              {statusFilter !== 'all' && (
+                <span className='bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full flex items-center gap-1'>
+                  Status: {statusFilter}
+                  <button onClick={() => setStatusFilter('all')} className='text-green-600 hover:text-green-800'>
+                    <HiOutlineX className='h-3 w-3' />
+                  </button>
+                </span>
+              )}
+              {cityFilter !== 'all' && (
+                <span className='bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full flex items-center gap-1'>
+                  City: {cityFilter}
+                  <button onClick={() => setCityFilter('all')} className='text-purple-600 hover:text-purple-800'>
+                    <HiOutlineX className='h-3 w-3' />
+                  </button>
+                </span>
+              )}
+              {stateFilter !== 'all' && (
+                <span className='bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full flex items-center gap-1'>
+                  State: {stateFilter}
+                  <button onClick={() => setStateFilter('all')} className='text-orange-600 hover:text-orange-800'>
+                    <HiOutlineX className='h-3 w-3' />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Frenchies Cards Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
-          {vendors.map(frenchie => (
+          {filteredFrenchies.map(frenchie => (
             <div
               key={frenchie._id}
               className='bg-white rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1'
+              onClick={() => navigate('/OrderManagementSystem')}
             >
               {/* Card Header with Gradient */}
               <div className='bg-gradient-to-r from-indigo-600 to-purple-600 p-5'>
@@ -100,20 +293,7 @@ const VendorCard = ({ data }) => {
                 {/* Owner Info */}
                 <div className='flex items-center mb-4'>
                   <div className='bg-gray-200 border-2 border-dashed rounded-full w-10 h-10 flex items-center justify-center'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-5 w-5 text-gray-500'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
-                      />
-                    </svg>
+                    <HiOutlineUser className='h-5 w-5 text-gray-500' />
                   </div>
                   <div className='ml-3'>
                     <h3 className='font-medium text-gray-900'>
@@ -162,45 +342,13 @@ const VendorCard = ({ data }) => {
                     </span>
                   </div>
                   <div className='flex items-center'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-5 w-5 text-indigo-500 mr-2'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z'
-                      />
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M15 11a3 3 0 11-6 0 3 3 0 016 0z'
-                      />
-                    </svg>
+                    <HiOutlineLocationMarker className='h-5 w-5 text-indigo-500 mr-2' />
                     <span className='text-gray-700'>
                       {frenchie.city}, {frenchie.state}
                     </span>
                   </div>
                   <div className='flex items-center'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-5 w-5 text-indigo-500 mr-2'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z'
-                      />
-                    </svg>
+                    <HiOutlineCurrencyRupee className='h-5 w-5 text-indigo-500 mr-2' />
                     <span className='text-gray-700'>
                       ₹{frenchie.salesCount.toLocaleString()}
                     </span>
@@ -209,20 +357,7 @@ const VendorCard = ({ data }) => {
 
                 {/* Joined Date */}
                 <div className='flex items-center text-sm text-gray-500 mb-4'>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-4 w-4 mr-2'
-                    fill='none'
-                    viewBox='0 0 24 24'
-                    stroke='currentColor'
-                  >
-                    <path
-                      strokeLinecap='round'
-                      strokeLinejoin='round'
-                      strokeWidth={2}
-                      d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
-                    />
-                  </svg>
+                  <HiOutlineCalendar className='h-4 w-4 mr-2' />
                   Joined:{' '}
                   {new Date(frenchie.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -233,46 +368,6 @@ const VendorCard = ({ data }) => {
 
                 {/* Action Buttons */}
                 <div className='flex gap-3 mt-4'>
-                  {/* <button
-                    onClick={() => setOpen(true)}
-                    className='flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 text-sm font-medium rounded-lg hover:bg-green-100 transition-all'
-                  >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-4 w-4'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
-                      />
-                    </svg>
-                    Edit
-                  </button> */}
-                  {/* <button className='flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 text-sm font-medium rounded-lg hover:bg-red-100 transition-all'>
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      className='h-4 w-4'
-                      fill='none'
-                      viewBox='0 0 24 24'
-                      stroke='currentColor'
-                    >
-                      <path
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeWidth={2}
-                        d='M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
-                      />
-                    </svg>
-                    Delete
-                  </button> */}
-
-                  {/* {console.log(frenchie?.frenchiesID)} */}
-
                   <div className='flex flex-1 justify-center items-center space-x-2'>
                     {result?.isLoading ? (
                       loadingId === frenchie.frenchiesID ? (
@@ -286,7 +381,7 @@ const VendorCard = ({ data }) => {
                             inputProps={{ 'aria-label': 'controlled' }}
                           />
                         </>
-                      ) // Small loader
+                      )
                     ) : (
                       <>
                         <p className='text-[15px]'>Active</p>
@@ -305,8 +400,8 @@ const VendorCard = ({ data }) => {
         </div>
 
         {/* Empty State */}
-        {vendors?.length === 0 && (
-          <div className='bg-white rounded-2xl shadow-lg p-8 text-center max-w-2xl mx-auto'>
+        {filteredFrenchies.length === 0 && (
+          <div className='bg-white rounded-2xl shadow-lg p-8 text-center max-w-2xl mx-auto mt-8'>
             <div className='mx-auto w-24 h-24 bg-indigo-50 rounded-full flex items-center justify-center mb-6'>
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -324,32 +419,28 @@ const VendorCard = ({ data }) => {
               </svg>
             </div>
             <h3 className='text-xl font-bold text-gray-800 mb-2'>
-              No Vendors Found
+              {Frenchies.length === 0 ? 'No Frenchies Found' : 'No Matching Frenchies'}
             </h3>
             <p className='text-gray-600 mb-6'>
-              It looks like there are no vendors in your system yet. Add your
-              first vendor to get started!
+              {Frenchies.length === 0
+                ? 'It looks like there are no Frenchies in your system yet. Add your first Frenchies to get started!'
+                : 'Try adjusting your search or filters to find what you\'re looking for.'
+              }
             </p>
+            {isFilterActive && (
+              <button
+                onClick={clearFilters}
+                className='px-6 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-all mr-3'
+              >
+                Clear All Filters
+              </button>
+            )}
             <button className='px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium rounded-lg hover:opacity-90 transition-all'>
-              Add New Vendor
+              Add New Frenchies
             </button>
           </div>
         )}
       </div>
-
-      {/* <from>
-        <div>
-          <label className='block text-gray-700 mb-2'>Address</label>
-          <input
-            type='text'
-            name='Address'
-            // value={editingVendor.Address}
-            // onChange={handleInputChange}
-            className='w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
-            required
-          />
-        </div>
-      </from> */}
     </div>
   )
 }

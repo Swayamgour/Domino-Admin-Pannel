@@ -17,7 +17,16 @@ import {
   HiOutlineCurrencyRupee,
   HiOutlineDocumentText,
   HiOutlineCreditCard,
-  HiOutlineBadgeCheck
+  HiOutlineBadgeCheck,
+  HiOutlineFilter,
+  HiOutlineRefresh,
+  HiOutlineDownload,
+  HiOutlineCash,
+  HiOutlineUser,
+  HiOutlineCalendar,
+  HiOutlineCheckCircle,
+  HiOutlineClock,
+  HiOutlineBan
 } from 'react-icons/hi'
 
 // Register Chart.js components
@@ -148,6 +157,8 @@ const PaymentTransactions = () => {
     }))
   )
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('transactions')
+  const [showNoData, setShowNoData] = useState(false)
 
   // Calculate revenue stats
   const revenueStats = {
@@ -182,7 +193,8 @@ const PaymentTransactions = () => {
     const searchMatch =
       !filter.search ||
       payment.id.toLowerCase().includes(filter.search.toLowerCase()) ||
-      payment.user.toLowerCase().includes(filter.search.toLowerCase())
+      payment.user.toLowerCase().includes(filter.search.toLowerCase()) ||
+      payment.vendor.toLowerCase().includes(filter.search.toLowerCase())
 
     return dateMatch && vendorMatch && statusMatch && searchMatch
   })
@@ -277,25 +289,64 @@ const PaymentTransactions = () => {
     }
   }
 
-  // Get status color
-  const getStatusColor = status => {
+  // Get status color and icon
+  const getStatusInfo = status => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800'
+        return {
+          color: 'bg-green-100 text-green-800',
+          icon: <HiOutlineCheckCircle className="h-4 w-4" />
+        }
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800'
+        return {
+          color: 'bg-yellow-100 text-yellow-800',
+          icon: <HiOutlineClock className="h-4 w-4" />
+        }
       case 'refunded':
-        return 'bg-red-100 text-red-800'
+        return {
+          color: 'bg-red-100 text-red-800',
+          icon: <HiOutlineBan className="h-4 w-4" />
+        }
       default:
-        return 'bg-gray-100 text-gray-800'
+        return {
+          color: 'bg-gray-100 text-gray-800',
+          icon: <HiOutlineClock className="h-4 w-4" />
+        }
     }
   }
 
+  // Format currency
+  const formatCurrency = amount => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount)
+  }
+
+  // Handle filter changes
+  const handleFilterChange = (key, value) => {
+    setFilter({
+      ...filter,
+      [key]: value
+    })
+  }
+
+  // Reset filters
+  const resetFilters = () => {
+    setFilter({
+      date: '',
+      vendor: 'all',
+      status: 'all',
+      search: ''
+    })
+  }
+
   return (
-    <div className='min-h-screen bg-gray-50 p-4'>
+    <div className='min-h-screen bg-gray-50 p-4 md:p-6'>
       {/* Mobile Header */}
       <div className='md:hidden flex justify-between items-center mb-4'>
-        <h1 className='text-xl font-bold text-gray-800'>Header Title</h1>
+        <h1 className='text-xl font-bold text-gray-800'>Payment Dashboard</h1>
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className='p-2 rounded-lg bg-indigo-600 text-white'
@@ -310,70 +361,299 @@ const PaymentTransactions = () => {
           <div className='relative'>
             <input
               type='text'
-              placeholder='Search...'
-              className='w-full p-2 border border-gray-300 rounded-lg'
+              placeholder='Search payments...'
+              value={filter.search}
+              onChange={e => handleFilterChange('search', e.target.value)}
+              className='w-full p-2 pl-9 border border-gray-300 rounded-lg'
             />
-            <HiOutlineSearch className='h-5 w-5 text-gray-400 absolute right-3 top-2.5' />
+            <HiOutlineSearch className='h-5 w-5 text-gray-400 absolute left-3 top-2.5' />
           </div>
         </div>
       )}
 
+      {/* Tabs */}
+      <div className='flex border-b border-gray-200 mb-6'>
+        <button
+          className={`py-2 px-4 font-medium text-sm ${activeTab === 'transactions' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+          onClick={() => setActiveTab('transactions')}
+        >
+          Transactions
+        </button>
+        <button
+          className={`py-2 px-4 font-medium text-sm ${activeTab === 'payouts' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+          onClick={() => setActiveTab('payouts')}
+        >
+          Payouts
+        </button>
+        <button
+          className={`py-2 px-4 font-medium text-sm ${activeTab === 'analytics' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          Analytics
+        </button>
+      </div>
+
       {/* Stats Cards */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4 mb-6'>
-        <div className='bg-white rounded-lg shadow p-4 flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-green-100'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
+        <div className='bg-white rounded-xl shadow-sm p-5 flex items-center gap-4'>
+          <div className='p-3 rounded-lg bg-green-100'>
             <HiOutlineCurrencyRupee className='h-6 w-6 text-green-600' />
           </div>
           <div>
             <p className='text-sm text-gray-500'>Total Revenue</p>
-            <p className='text-lg font-bold text-gray-800'>₹45,000</p>
+            <p className='text-lg font-bold text-gray-800'>{formatCurrency(revenueStats.totalRevenue)}</p>
           </div>
         </div>
 
-        <div className='bg-white rounded-lg shadow p-4 flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-purple-100'>
+        <div className='bg-white rounded-xl shadow-sm p-5 flex items-center gap-4'>
+          <div className='p-3 rounded-lg bg-purple-100'>
             <HiOutlineDocumentText className='h-6 w-6 text-purple-600' />
           </div>
           <div>
             <p className='text-sm text-gray-500'>Total Commission</p>
-            <p className='text-lg font-bold text-gray-800'>₹5,000</p>
+            <p className='text-lg font-bold text-gray-800'>{formatCurrency(revenueStats.totalCommission)}</p>
           </div>
         </div>
 
-        <div className='bg-white rounded-lg shadow p-4 flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-blue-100'>
+        <div className='bg-white rounded-xl shadow-sm p-5 flex items-center gap-4'>
+          <div className='p-3 rounded-lg bg-blue-100'>
             <HiOutlineCreditCard className='h-6 w-6 text-blue-600' />
           </div>
           <div>
             <p className='text-sm text-gray-500'>Pending Payout</p>
-            <p className='text-lg font-bold text-gray-800'>₹8,000</p>
+            <p className='text-lg font-bold text-gray-800'>{revenueStats.pendingPayout} Transactions</p>
           </div>
         </div>
 
-        <div className='bg-white rounded-lg shadow p-4 flex items-center gap-3'>
-          <div className='p-2 rounded-lg bg-yellow-100'>
+        <div className='bg-white rounded-xl shadow-sm p-5 flex items-center gap-4'>
+          <div className='p-3 rounded-lg bg-yellow-100'>
             <HiOutlineBadgeCheck className='h-6 w-6 text-yellow-600' />
           </div>
           <div>
             <p className='text-sm text-gray-500'>Total Payout</p>
-            <p className='text-lg font-bold text-gray-800'>₹32,000</p>
+            <p className='text-lg font-bold text-gray-800'>{formatCurrency(revenueStats.totalPayout)}</p>
           </div>
         </div>
       </div>
 
-      {/* No Data Message */}
-      <div className='text-center py-12 bg-white rounded-xl shadow'>
-        <HiOutlineEmojiSad className='h-16 w-16 mx-auto text-gray-400' />
-        <h3 className='mt-4 text-lg font-medium text-gray-900'>
-          No Data Found
-        </h3>
-        <p className='text-gray-500'>Try adjusting your search or filter</p>
+      {/* Filters and Search */}
+      <div className='bg-white rounded-xl shadow-sm p-4 mb-6'>
+        <div className='flex flex-col md:flex-row md:items-center gap-4'>
+          <div className='relative flex-1'>
+            <HiOutlineSearch className='h-5 w-5 text-gray-400 absolute left-3 top-2.5' />
+            <input
+              type='text'
+              placeholder='Search by ID, user, or vendor...'
+              value={filter.search}
+              onChange={e => handleFilterChange('search', e.target.value)}
+              className='w-full p-2 pl-10 border border-gray-300 rounded-lg'
+            />
+          </div>
+          
+          <div className='grid grid-cols-2 md:flex gap-2'>
+            <select
+              value={filter.vendor}
+              onChange={e => handleFilterChange('vendor', e.target.value)}
+              className='p-2 border border-gray-300 rounded-lg text-sm'
+            >
+              <option value="all">All Frenchies</option>
+              {vendorOptions.map(vendor => (
+                <option key={vendor} value={vendor}>{vendor}</option>
+              ))}
+            </select>
+            
+            <select
+              value={filter.status}
+              onChange={e => handleFilterChange('status', e.target.value)}
+              className='p-2 border border-gray-300 rounded-lg text-sm'
+            >
+              <option value="all">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="refunded">Refunded</option>
+            </select>
+            
+            <input
+              type="date"
+              value={filter.date}
+              onChange={e => handleFilterChange('date', e.target.value)}
+              className='p-2 border border-gray-300 rounded-lg text-sm'
+            />
+            
+            <button
+              onClick={resetFilters}
+              className='p-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm flex items-center gap-1'
+            >
+              <HiOutlineRefresh className="h-4 w-4" />
+              Reset
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Close Icon Example */}
-      <div className='absolute top-4 right-4'>
-        <HiOutlineX className='h-6 w-6 text-gray-600 cursor-pointer' />
-      </div>
+      {/* Transactions Table */}
+      {activeTab === 'transactions' && (
+        <div className='bg-white rounded-xl shadow-sm overflow-hidden mb-6'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>ID & Date</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>User & Vendor</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Amount</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Method</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Commission</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Status</th>
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {filteredPayments.map(payment => {
+                  const statusInfo = getStatusInfo(payment.status)
+                  return (
+                    <tr key={payment.id} className="hover:bg-gray-50">
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <div className='text-sm font-medium text-gray-900'>{payment.id}</div>
+                        <div className='text-sm text-gray-500'>{payment.date.split(' ')[0]}</div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <div className='text-sm font-medium text-gray-900'>{payment.user}</div>
+                        <div className='text-sm text-gray-500'>{payment.vendor}</div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <div className='text-sm font-medium text-gray-900'>{formatCurrency(payment.amount)}</div>
+                        <div className='text-sm text-gray-500'>Payout: {formatCurrency(payment.payout)}</div>
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                        {payment.method}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900'>
+                        {formatCurrency(payment.commission)}
+                      </td>
+                      <td className='px-6 py-4 whitespace-nowrap'>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusInfo.color}`}>
+                          {statusInfo.icon}
+                          <span className='ml-1 capitalize'>{payment.status}</span>
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          
+          {filteredPayments.length === 0 && (
+            <div className='text-center py-12'>
+              <HiOutlineEmojiSad className='h-16 w-16 mx-auto text-gray-400' />
+              <h3 className='mt-4 text-lg font-medium text-gray-900'>
+                No Transactions Found
+              </h3>
+              <p className='text-gray-500'>Try adjusting your search or filter</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Payouts Section */}
+      {activeTab === 'payouts' && (
+        <div className='bg-white rounded-xl shadow-sm overflow-hidden mb-6'>
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead className='bg-gray-50'>
+                <tr>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Vendor</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Balance</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Commission Rate</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Payout Amount</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Last Payout</th>
+                  <th className='px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider'>Actions</th>
+                </tr>
+              </thead>
+              <tbody className='bg-white divide-y divide-gray-200'>
+                {payouts.map(vendor => (
+                  <tr key={vendor.id} className="hover:bg-gray-50">
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <div className='text-sm font-medium text-gray-900'>{vendor.name}</div>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-900'>
+                      {formatCurrency(vendor.balance)}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap'>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={commissionRates[vendor.id]}
+                        onChange={e => updateCommissionRate(vendor.id, parseInt(e.target.value))}
+                        className="w-20 p-1 border border-gray-300 rounded text-sm"
+                      />
+                      <span className="ml-1 text-sm">%</span>
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600'>
+                      {formatCurrency(vendor.payoutAmount)}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500'>
+                      {vendor.lastPayout}
+                    </td>
+                    <td className='px-6 py-4 whitespace-nowrap text-sm font-medium'>
+                      <button
+                        onClick={() => processPayout(vendor.id)}
+                        disabled={vendor.payoutAmount <= 0}
+                        className={`px-3 py-1 rounded-md ${vendor.payoutAmount > 0 ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                      >
+                        Process Payout
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Analytics Section */}
+      {activeTab === 'analytics' && (
+        <div className='grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6'>
+          <div className='bg-white rounded-xl shadow-sm p-6'>
+            <div className='h-80'>
+              <Bar data={revenueChartData} options={revenueChartOptions} />
+            </div>
+          </div>
+          
+          <div className='bg-white rounded-xl shadow-sm p-6'>
+            <h3 className='text-lg font-medium text-gray-900 mb-4'>Payment Methods</h3>
+            <div className='space-y-4'>
+              {['Credit Card', 'UPI', 'Wallet', 'Net Banking'].map(method => (
+                <div key={method} className='flex items-center justify-between'>
+                  <span className='text-sm text-gray-600'>{method}</span>
+                  <div className='w-48 bg-gray-200 rounded-full h-2.5'>
+                    <div 
+                      className='bg-indigo-600 h-2.5 rounded-full' 
+                      style={{ width: `${Math.floor(Math.random() * 70) + 30}%` }}
+                    ></div>
+                  </div>
+                  <span className='text-sm font-medium text-gray-900 w-10 text-right'>
+                    {Math.floor(Math.random() * 40) + 20}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Action Buttons */}
+      {/* <div className='flex justify-end gap-3'>
+        <button className='flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50'>
+          <HiOutlineDownload className='h-5 w-5' />
+          Export CSV
+        </button>
+        <button className='flex items-center gap-2 px-4 py-2 bg-indigo-600 border border-transparent rounded-lg text-white hover:bg-indigo-700'>
+          <HiOutlineCash className='h-5 w-5' />
+          Process All Payouts
+        </button>
+      </div> */}
     </div>
   )
 }

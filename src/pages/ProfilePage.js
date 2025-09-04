@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import ProfileEdit from '../component/ProfileEdit'
 import ChangePassword from '../component/ChangePassword'
 import { useGetCurrentUserQuery } from '../redux/api'
+import ProfileImageUpdate from '../component/ProfileImageUpdate'
 
 const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState('profile')
@@ -27,6 +28,8 @@ const ProfilePage = () => {
   let userData = userDetail?.data
   // console.log(userData)
 
+  console.log(userDetail)
+
   // Format dates
   const formatDate = dateString => {
     const options = {
@@ -41,10 +44,10 @@ const ProfilePage = () => {
 
   // Stats data
   const stats = [
-    { label: 'Total Projects', value: 12 },
-    { label: 'Active Tasks', value: 5 },
-    { label: 'Completed', value: 24 },
-    { label: 'Team Members', value: 8 }
+    { label: 'Total Frenchies', value: 12 },
+    { label: 'Total Order', value: 5 },
+    { label: 'Completed Order', value: 24 },
+    { label: 'Pending Order', value: 8 }
   ]
 
   // Activity data
@@ -72,19 +75,30 @@ const ProfilePage = () => {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               {/* Profile Header */}
-              <div className='bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center relative'>
+              {/* <div className='bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-center relative'>
                 <div className='absolute top-0 left-0 w-full h-full opacity-10'>
                   <div className='pattern-dots pattern-blue-500 pattern-bg-transparent pattern-opacity-100 pattern-size-4' />
                 </div>
 
                 <div className='relative z-10'>
-                  <div className='mx-auto bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-full w-32 h-32 flex items-center justify-center mb-4'>
-                    <div className='bg-indigo-100 border-2 border-dashed border-indigo-300 rounded-full w-24 h-24 flex items-center justify-center'>
-                      <span className='text-3xl font-bold text-indigo-700'>
-                        {/* {userData?.name} */}
-                      </span>
+                  <div className="mx-auto bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-full w-32 h-32 flex items-center justify-center mb-4 relative">
+                    <div className="bg-indigo-100 border-2 border-dashed border-indigo-300 rounded-full w-24 h-24 flex items-center justify-center overflow-hidden">
+                      <img
+                        src="https://imgs.search.brave.com/kvBPNeUD--wsOXJnz_SVUDkwLDDopfdeKoa8NdFBybw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAzLzY0LzIxLzEx/LzM2MF9GXzM2NDIx/MTE0N18xcWdMVnh2/MVRjcTBPaHozRmF3/VWZydE9Oeno4bnEz/ZS5qcGc"
+                        alt="Profile"
+                        className="w-full h-full object-cover rounded-full"
+                      />
                     </div>
+
+                    
+                    <button
+                      className="absolute bottom-4 right-2  p-1 rounded-full shadow  bg-white"
+                      onClick={() => alert("Edit image clicked!")}
+                    >
+                      ✏️
+                    </button>
                   </div>
+
                   <h2 className='text-2xl font-bold text-white'>
                     {userData?.ownerName}
                   </h2>
@@ -95,7 +109,9 @@ const ProfilePage = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </div> */}
+
+              <ProfileImageUpdate />
 
               {/* Profile Stats */}
               <div className='p-6'>
@@ -128,74 +144,14 @@ const ProfilePage = () => {
                 </div>
 
                 {/* Last Login */}
-                <div className='mt-4 text-center text-sm text-gray-500'>
+                {/* <div className='mt-4 text-center text-sm text-gray-500'>
                   Last login: {formatDate(userData?.lastLogin)}
-                </div>
+                </div> */}
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div
-              className='mt-6 bg-white rounded-2xl shadow-lg p-6'
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-            >
-              <h3 className='text-lg font-bold text-gray-800 mb-4'>
-                Quick Actions
-              </h3>
-              <div className='space-y-3'>
-                <button
-                  onClick={() => setEditProfile(true)}
-                  className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'
-                >
-                  <span className='font-medium text-gray-700'>
-                    Edit Profile
-                  </span>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-5 w-5 text-indigo-600'
-                    viewBox='0 0 20 20'
-                    fill='currentColor'
-                  >
-                    <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setPasswordForm(true)}
-                  className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'
-                >
-                  <span className='font-medium text-gray-700'>
-                    Change Password
-                  </span>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-5 w-5 text-indigo-600'
-                    viewBox='0 0 20 20'
-                    fill='currentColor'
-                  >
-                    <path
-                      fillRule='evenodd'
-                      d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z'
-                      clipRule='evenodd'
-                    />
-                  </svg>
-                </button>
-                {/* <button className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'>
-                  <span className='font-medium text-gray-700'>
-                    Notification Settings
-                  </span>
-                  <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-5 w-5 text-indigo-600'
-                    viewBox='0 0 20 20'
-                    fill='currentColor'
-                  >
-                    <path d='M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z' />
-                  </svg>
-                </button> */}
-              </div>
-            </div>
+
           </div>
 
           {/* Main Content */}
@@ -210,31 +166,28 @@ const ProfilePage = () => {
               <div className='border-b border-gray-200'>
                 <nav className='flex px-6'>
                   <button
-                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
-                      activeTab === 'profile'
-                        ? 'border-indigo-600 text-indigo-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${activeTab === 'profile'
+                      ? 'border-indigo-600 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      }`}
                     onClick={() => setActiveTab('profile')}
                   >
                     Profile Information
                   </button>
                   <button
-                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
-                      activeTab === 'activity'
-                        ? 'border-indigo-600 text-indigo-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${activeTab === 'activity'
+                      ? 'border-indigo-600 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      }`}
                     onClick={() => setActiveTab('activity')}
                   >
                     Activity Log
                   </button>
                   <button
-                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${
-                      activeTab === 'settings'
-                        ? 'border-indigo-600 text-indigo-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    }`}
+                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${activeTab === 'settings'
+                      ? 'border-indigo-600 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      }`}
                     onClick={() => setActiveTab('settings')}
                   >
                     Settings
@@ -335,69 +288,7 @@ const ProfilePage = () => {
                       </div>
 
                       {/* Frenchies Section */}
-                      <div>
-                        <h3 className='text-xl font-bold text-gray-800 mb-4 flex items-center'>
-                          <svg
-                            xmlns='http://www.w3.org/2000/svg'
-                            className='h-5 w-5 mr-2 text-indigo-600'
-                            viewBox='0 0 20 20'
-                            fill='currentColor'
-                          >
-                            <path d='M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z' />
-                          </svg>
-                          Frenchies
-                        </h3>
-                        {userData?.frenchies && userData?.frenchies.length > 0 ? (
-                          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-                            {userData?.frenchies.map((frenchie, index) => (
-                              <div
-                                key={index}
-                                className='bg-indigo-50 p-4 rounded-lg border border-indigo-100'
-                              >
-                                <div className='flex items-center'>
-                                  <div className='bg-indigo-100 p-2 rounded-lg mr-3'>
-                                    <svg
-                                      xmlns='http://www.w3.org/2000/svg'
-                                      className='h-5 w-5 text-indigo-600'
-                                      viewBox='0 0 20 20'
-                                      fill='currentColor'
-                                    >
-                                      <path
-                                        fillRule='evenodd'
-                                        d='M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z'
-                                        clipRule='evenodd'
-                                      />
-                                    </svg>
-                                  </div>
-                                  <span className='font-medium text-gray-800'>
-                                    {frenchie}
-                                  </span>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className='bg-indigo-50 rounded-xl p-8 text-center border-2 border-dashed border-indigo-200'>
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              className='h-12 w-12 mx-auto text-indigo-400'
-                              fill='none'
-                              viewBox='0 0 24 24'
-                              stroke='currentColor'
-                            >
-                              <path
-                                strokeLinecap='round'
-                                strokeLinejoin='round'
-                                strokeWidth={1.5}
-                                d='M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                              />
-                            </svg>
-                            <p className='text-gray-600 mt-3'>
-                              No frenchies associated with this account
-                            </p>
-                          </div>
-                        )}
-                      </div>
+
                     </div>
                   </div>
                 )}
@@ -482,6 +373,56 @@ const ProfilePage = () => {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+
+            <div
+              className='mt-6 bg-white rounded-2xl shadow-lg p-6'
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <h3 className='text-lg font-bold text-gray-800 mb-4'>
+                Quick Actions
+              </h3>
+              <div className='space-y-3'>
+                <button
+                  onClick={() => setEditProfile(true)}
+                  className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'
+                >
+                  <span className='font-medium text-gray-700'>
+                    Edit Profile
+                  </span>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 text-indigo-600'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path d='M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z' />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setPasswordForm(true)}
+                  className='w-full flex items-center justify-between py-3 px-4 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors'
+                >
+                  <span className='font-medium text-gray-700'>
+                    Change Password
+                  </span>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-5 w-5 text-indigo-600'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'
+                  >
+                    <path
+                      fillRule='evenodd'
+                      d='M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                </button>
+
               </div>
             </div>
           </div>
