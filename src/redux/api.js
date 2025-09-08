@@ -46,6 +46,16 @@ export const pokemonApi = createApi({
       }),
       invalidatesTags: ['Admin']
     }),
+
+    updateProfileImage: build.mutation({
+      query: (formData) => ({
+        url: `auth/profile/image`, // 👈 aapka backend route
+        method: "PUT",
+        body: formData,
+      }),
+      invalidatesTags: ["Admin"], // 👈 taaki getCurrentUser refetch ho jaye
+    }),
+
     logout: build.mutation({
       query: newAdmin => ({
         url: 'v1/users/logout',
@@ -60,6 +70,11 @@ export const pokemonApi = createApi({
         `franchise`,
       providesTags: ['Admin']
     }),
+    getFranchiseById: build.query({
+      query: (id) =>
+        `franchise/${id}`,
+      providesTags: ['Admin']
+    }),
 
     createAdminBySuperAdmin: build.mutation({
       query: newAdmin => ({
@@ -72,7 +87,7 @@ export const pokemonApi = createApi({
 
     activeFrenchies: build.mutation({
       query: body => ({
-        url: `v1/users/super-admin/manage-frenchies`,
+        url: `franchise/${body.vendorId}`,
         method: 'PUT',
         body
       }),
@@ -133,7 +148,7 @@ export const pokemonApi = createApi({
     }),
     CreateCategory: build.mutation({
       query: newAdmin => ({
-        url: 'v1/category/create-category',
+        url: 'category',
         method: 'POST',
         body: newAdmin
       }),
@@ -178,5 +193,7 @@ export const {
   useUpdateFrenchieMutation,
   useActiveFrenchiesMutation,
   useGetOrderByIdQuery,
-  useGetOrderByfrenchieQuery
+  useGetOrderByfrenchieQuery,
+  useUpdateProfileImageMutation,
+  useGetFranchiseByIdQuery
 } = pokemonApi

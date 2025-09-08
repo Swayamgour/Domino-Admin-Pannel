@@ -25,10 +25,10 @@ const ProfilePage = () => {
   // }
 
   const { data: userDetail } = useGetCurrentUserQuery()
-  let userData = userDetail?.data
+  let userData = userDetail?.user
   // console.log(userData)
 
-  console.log(userDetail)
+  // console.log(userDetail)
 
   // Format dates
   const formatDate = dateString => {
@@ -111,7 +111,7 @@ const ProfilePage = () => {
                 </div>
               </div> */}
 
-              <ProfileImageUpdate />
+              <ProfileImageUpdate userData={userData} />
 
               {/* Profile Stats */}
               <div className='p-6'>
@@ -174,15 +174,7 @@ const ProfilePage = () => {
                   >
                     Profile Information
                   </button>
-                  <button
-                    className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${activeTab === 'activity'
-                      ? 'border-indigo-600 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
-                      }`}
-                    onClick={() => setActiveTab('activity')}
-                  >
-                    Activity Log
-                  </button>
+                 
                   <button
                     className={`py-4 px-6 font-medium text-sm border-b-2 transition-colors ${activeTab === 'settings'
                       ? 'border-indigo-600 text-indigo-600'
@@ -293,47 +285,7 @@ const ProfilePage = () => {
                   </div>
                 )}
 
-                {activeTab === 'activity' && (
-                  <div>
-                    <h3 className='text-xl font-bold text-gray-800 mb-6'>
-                      Recent Activity
-                    </h3>
-                    <div className='space-y-4'>
-                      {activities.map((activity, index) => (
-                        <div
-                          key={activity.id}
-                          className='flex items-start p-4 border-b border-gray-100 last:border-0'
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                        >
-                          <div className='bg-indigo-100 p-2 rounded-full mr-4'>
-                            <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              className='h-5 w-5 text-indigo-600'
-                              viewBox='0 0 20 20'
-                              fill='currentColor'
-                            >
-                              <path
-                                fillRule='evenodd'
-                                d='M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z'
-                                clipRule='evenodd'
-                              />
-                            </svg>
-                          </div>
-                          <div className='flex-1'>
-                            <p className='font-medium text-gray-800'>
-                              {activity.action}
-                            </p>
-                            <p className='text-sm text-gray-500'>
-                              {formatDate(activity.time)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+               
 
                 {activeTab === 'settings' && (
                   <div>

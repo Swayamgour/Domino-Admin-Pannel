@@ -42,7 +42,7 @@ const Sidebar = () => {
 
   const navigate = useNavigate()
 
-  const { data: CurrentUser } = useGetCurrentUserQuery()
+  const { data: CurrentUser, isSuccess, isLoading } = useGetCurrentUserQuery()
   const [logout] = useLogoutMutation()
 
 
@@ -50,93 +50,97 @@ const Sidebar = () => {
 
   const handelLogOut = async () => {
     try {
-      Cookies.remove('accessToken') // Clear token
+      Cookies.remove('accessToken'); // Clear token
 
-      // setTimeout(() => {
-      //   window.location.reload() // Reload after navigation
-      // }, 1000)
-      navigate('/') // Redirect to home
+      setTimeout(() => {
+        window.location.href = '/'; // ✅ Best way: force reload + redirect to home
+      }, 500);
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error('Logout failed:', error);
     }
-  }
+  };
+
 
   return (
     <div className='w-64 min-h-screen bg-gradient-to-b from-gray-800 to-gray-900 text-white p-5 fixed left-0 top-0  flex-col shadow-xl z-50 hidden md:block'>
       {/* Branding */}
-      <div className='mb-5 pt-2 flex-col justify-center items-center gap-3 border-b border-gray-700 pb-5'>
-        <div className='flex justify-center ' onClick={() => navigate('/Home')}>
-          {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
-          <img
-            src='/image/logo1.png'
-            className='w-[130px] h-[57px]'
-            alt='of logo'
-          />
-        </div>
-        {/* <div>
+      {/* {!isLoading && */}
+      <>
+        <div className='mb-5 pt-2 flex-col justify-center items-center gap-3 border-b border-gray-700 pb-5'>
+          <div className='flex justify-center ' onClick={() => navigate('/Home')}>
+            {/* <img src='/image/logo1.png' className='w-30 h-12 ' /> */}
+            <img
+              src='/image/logo1.png'
+              className='w-[130px] h-[57px]'
+              alt='of logo'
+            />
+          </div>
+          {/* <div>
           <h1 className='text-2xl font-bold'>Admin</h1>
           
           <p className='text-xs text-gray-400'>Dashboard v3.0</p>
         </div> */}
-        <h1 className='text-2xl font-bold text-center'>
-          {franchise_admin ? 'Admin' : 'Super Admin'}
-        </h1>
-      </div>
-
-      {/* Navigation */}
-      <nav className='space-y-1 flex-1 '>
-        <NavItem to='/Home' icon={FaHome} label='Dashboard' />
-        {franchise_admin && (
-          <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
-        )}
-        {!franchise_admin && (
-          <NavItem to='/Vendor' icon={FaStore} label='Frenchies' />
-        )}
-        {CurrentUser?.data?.role !== 'frenchies' && (
-          <NavItem
-            to='/OrderManagement'
-            icon={FaClipboardList}
-            label='Orders'
-          />
-        )}
-        {CurrentUser?.data?.role === 'frenchies' && (
-          <NavItem to='/FrencieOrder' icon={FaClipboardList} label='Orders' />
-        )}
-        {/* <NavItem to='/users' icon={FaUsers} label='Users' /> */}
-        <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />
-        {/* <NavItem to="/reports" icon={FaChartBar} label="Reports" /> */}
-        {/* <NavItem to="/settings" icon={FiSettings} label="Settings" /> */}
-      </nav>
-
-      {/* Footer with Logout */}
-      <div className='mt-auto pt-5 border-t border-gray-700'>
-        <div
-          onClick={() => navigate('/ProfilePage')}
-          className='flex items-center gap-3 p-3 bg-gray-800 rounded-xl mb-4'
-        >
-          <div className='bg-gradient-to-br from-indigo-500 to-purple-600 w-10 h-10 rounded-full flex items-center justify-center'>
-            <span className='font-bold'>AK</span>
-          </div>
-          <div>
-            <p className='font-medium'>
-              {franchise_admin
-                ? 'Admin '
-                : 'Super Admin'}
-            </p>
-            <p className='text-xs text-gray-400'>admin@example.com</p>
-          </div>
+          <h1 className='text-2xl font-bold text-center'>
+            {franchise_admin ? 'Admin' : 'Super Admin'}
+          </h1>
         </div>
 
-        <div
-          className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer`}
-          onClick={() => handelLogOut()}
-        >
-          <div className={`p-2 rounded-lg `}>
-            <IoExitOutline className='text-lg' />
+        {/* Navigation */}
+        <nav className='space-y-1 flex-1 '>
+          <NavItem to='/Home' icon={FaHome} label='Dashboard' />
+          {franchise_admin && (
+            <NavItem to='/Products' icon={FaBoxOpen} label='Products' />
+          )}
+          {!franchise_admin && (
+            <NavItem to='/Vendor' icon={FaStore} label='Frenchies' />
+          )}
+          {CurrentUser?.data?.role !== 'frenchies' && (
+            <NavItem
+              to='/OrderManagement'
+              icon={FaClipboardList}
+              label='Orders'
+            />
+          )}
+          {CurrentUser?.data?.role === 'frenchies' && (
+            <NavItem to='/FrencieOrder' icon={FaClipboardList} label='Orders' />
+          )}
+          {/* <NavItem to='/users' icon={FaUsers} label='Users' /> */}
+          <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />
+          {/* <NavItem to="/reports" icon={FaChartBar} label="Reports" /> */}
+          {/* <NavItem to="/settings" icon={FiSettings} label="Settings" /> */}
+        </nav>
+
+        {/* Footer with Logout */}
+        <div className='mt-auto pt-5 border-t border-gray-700'>
+          <div
+            onClick={() => navigate('/ProfilePage')}
+            className='flex items-center gap-3 p-3 bg-gray-800 rounded-xl mb-4'
+          >
+            <div className='bg-gradient-to-br from-indigo-500 to-purple-600 w-10 h-10 rounded-full flex items-center justify-center'>
+              <span className='font-bold'>AK</span>
+            </div>
+            <div>
+              <p className='font-medium'>
+                {franchise_admin
+                  ? 'Admin '
+                  : 'Super Admin'}
+              </p>
+              <p className='text-xs text-gray-400'>admin@example.com</p>
+            </div>
           </div>
-          Logout
+
+          <div
+            className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 cursor-pointer`}
+            onClick={() => handelLogOut()}
+          >
+            <div className={`p-2 rounded-lg `}>
+              <IoExitOutline className='text-lg' />
+            </div>
+            Logout
+          </div>
         </div>
-      </div>
+      </>
+      {/* } */}
     </div>
   )
 }

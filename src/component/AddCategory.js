@@ -9,12 +9,23 @@ const AddCategoryDialog = ({ isOpen, onClose, onSubmit }) => {
   const handleSubmit = e => {
     e.preventDefault()
 
-    if (categoryName && image) {
-      const formData = new FormData()
-      formData.append('name', categoryName)
-      formData.append('image', image) // Binary file
+    // if (categoryName && image) {
+    //   const formData = new FormData()
+    //   formData.append('name', categoryName)
+    //   formData.append('image', image) // Binary file
 
-      createCategory(formData) // RTK Query will handle the request
+    //   createCategory(formData) // RTK Query will handle the request
+
+    //   setCategoryName('')
+    //   setImage(null)
+    //   onClose()
+    // }
+
+    if (categoryName) {
+      let body = {
+        name: categoryName
+      }
+      createCategory(body)
 
       setCategoryName('')
       setImage(null)
@@ -57,7 +68,7 @@ const AddCategoryDialog = ({ isOpen, onClose, onSubmit }) => {
               </div>
 
               {/* Image Upload */}
-              <div>
+              {/* <div>
                 <label className='block text-gray-700 mb-1'>Upload Image</label>
                 <input
                   type='file'
@@ -66,7 +77,7 @@ const AddCategoryDialog = ({ isOpen, onClose, onSubmit }) => {
                   className='w-full'
                   required
                 />
-              </div>
+              </div> */}
 
               {/* Submit Button */}
               <div className='text-center'>

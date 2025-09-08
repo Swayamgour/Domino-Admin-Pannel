@@ -109,7 +109,7 @@ function Layout () {
               }
             />
             <Route
-              path='/OrderManagementSystem'
+              path='/FrenchiesMangement/:id'
               element={
                 <AuthGuard>
                   <OrderManagementSystem />

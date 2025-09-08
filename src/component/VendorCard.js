@@ -28,21 +28,35 @@ const VendorCard = ({ data }) => {
   const [stateFilter, setStateFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
 
-  const handleStatusChange = async vendorId => {
+
+
+  const handleStatusChange = async (vendorId, isActive) => {
     setLoadingId(vendorId);
+    // console.log(vendorId, isActive)
 
     if (!vendorId) {
       console.error('Missing vendor ID!');
       return;
     }
 
-    const body = {
-      action: 'toggleStatus',
-      vendorId
-    };
+
 
     try {
-      await updateVendor(body).unwrap();
+      if (isActive) {
+        let body = {
+          isActive: false,
+          vendorId
+
+        }
+        await updateVendor(body).unwrap();
+      }
+      else {
+        let body = {
+          isActive: true,
+          vendorId
+        }
+        await updateVendor(body).unwrap();
+      }
       console.log('Status toggled for:', vendorId);
     } catch (err) {
       console.error('Error updating status:', err);
@@ -56,27 +70,41 @@ const VendorCard = ({ data }) => {
 
   // Filter vendors based on search term and filters
   const filteredVendors = vendors?.filter(vendor => {
-    // Search term filter
-    const matchesSearch =
-      searchTerm === '' ||
-      vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (vendor.ownerName && vendor.ownerName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (vendor.email && vendor.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      vendor.phone.includes(searchTerm) ||
-      (vendor._id && vendor._id.toLowerCase().includes(searchTerm.toLowerCase()));
+    const search = searchTerm.toLowerCase();
+
+    // Combine all searchable fields in one string
+    const searchableString = [
+      vendor?.name,
+      vendor?.city,
+      vendor?.state,
+      vendor?.address,
+      vendor?.phone,
+      vendor?._id,
+      vendor?.ownerUserId?.name,
+      vendor?.ownerUserId?.phone,
+      vendor?.ownerUserId?._id
+    ]
+      .filter(Boolean) // remove undefined/null values
+      .join(" ") // join into single string
+      .toLowerCase();
+
+    // Search filter (matches if searchTerm is empty or found anywhere)
+    const matchesSearch = !searchTerm || searchableString.includes(search);
 
     // City filter
     const matchesCity =
-      cityFilter === 'all' ||
-      (vendor.city && vendor.city.toLowerCase() === cityFilter.toLowerCase());
+      cityFilter === "all" ||
+      vendor?.city?.toLowerCase() === cityFilter.toLowerCase();
 
     // State filter
     const matchesState =
-      stateFilter === 'all' ||
-      (vendor.state && vendor.state.toLowerCase() === stateFilter.toLowerCase());
+      stateFilter === "all" ||
+      vendor?.state?.toLowerCase() === stateFilter.toLowerCase();
 
     return matchesSearch && matchesCity && matchesState;
   });
+
+
 
   // Get unique values for filter dropdowns
   const cityOptions = ['all', ...new Set(vendors?.map(v => v.city).filter(Boolean))];
@@ -211,7 +239,7 @@ const VendorCard = ({ data }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredVendors?.map(vendor => (
             <div
-              key={vendor._id}
+              key={vendor?._id}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1"
             >
               {/* Card Header with Gradient */}
@@ -220,23 +248,28 @@ const VendorCard = ({ data }) => {
                   <div className="flex items-center">
                     <div className="bg-white bg-opacity-20 rounded-xl w-16 h-16 flex items-center justify-center">
                       <div className="text-white text-2xl font-bold">
-                        {vendor.name.charAt(0)}
+                        {vendor?.name.charAt(0)}
                       </div>
                     </div>
                     <div className="ml-4">
                       <h2 className="text-xl font-bold text-white">
-                        {vendor.name}
+                        {vendor?.name}
                       </h2>
                       <p className="text-indigo-200 text-sm">
-                        ID: {vendor._id.substring(0, 8)}
+                        ID: {vendor?._id.substring(0, 8)}
                       </p>
                     </div>
                   </div>
                   <span
-                    className="text-xs font-semibold px-3 py-1 rounded-full bg-green-100 text-green-800 border border-green-200"
+                    className={`text-xs font-semibold px-3 py-1 rounded-full border 
+                      ${vendor?.isActive
+                        ? "bg-green-100 text-green-800 border-green-200"
+                        : "bg-red-100 text-red-800 border-red-200"
+                      }`}
                   >
-                    Active
+                    {vendor?.isActive ? "Active" : "Inactive"}
                   </span>
+
                 </div>
               </div>
 
@@ -246,9 +279,9 @@ const VendorCard = ({ data }) => {
                 <div className="flex items-center mb-4">
                   <HiOutlineLocationMarker className="h-5 w-5 text-gray-500 mr-2" />
                   <div>
-                    <p className="text-gray-900">{vendor.address}</p>
+                    <p className="text-gray-900">{vendor?.address}</p>
                     <p className="text-sm text-gray-500">
-                      {vendor.city}, {vendor.state}
+                      {vendor?.city}, {vendor?.state}
                     </p>
                   </div>
                 </div>
@@ -257,20 +290,20 @@ const VendorCard = ({ data }) => {
                 <div className="space-y-3 mb-4">
                   <div className="flex items-center">
                     <HiOutlinePhone className="h-5 w-5 text-indigo-500 mr-2" />
-                    <span className="text-gray-700">{vendor.phone}</span>
+                    <span className="text-gray-700">{vendor?.phone}</span>
                   </div>
 
-                  {vendor.contact && (
+                  {vendor?.contact && (
                     <div className="flex items-center">
                       <HiOutlinePhone className="h-5 w-5 text-indigo-500 mr-2" />
-                      <span className="text-gray-700">{vendor.contact}</span>
+                      <span className="text-gray-700">{vendor?.contact}</span>
                     </div>
                   )}
 
-                  {vendor.email && (
+                  {vendor?.email && (
                     <div className="flex items-center">
                       <HiOutlineMail className="h-5 w-5 text-indigo-500 mr-2" />
-                      <span className="text-gray-700 truncate">{vendor.email}</span>
+                      <span className="text-gray-700 truncate">{vendor?.email}</span>
                     </div>
                   )}
                 </div>
@@ -278,7 +311,7 @@ const VendorCard = ({ data }) => {
                 {/* Dates */}
                 <div className="flex items-center text-sm text-gray-500 mb-4">
                   <HiOutlineCalendar className="h-4 w-4 mr-2" />
-                  Created: {new Date(vendor.createdAt).toLocaleDateString('en-US', {
+                  Created: {new Date(vendor?.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric'
@@ -288,24 +321,24 @@ const VendorCard = ({ data }) => {
                 {/* Action Buttons */}
                 <div className="flex gap-3 mt-4">
                   <button
-                    onClick={() => navigate(`/vendor/${vendor._id}`)}
+                    onClick={() => navigate(`/FrenchiesMangement/${vendor?._id}`)}
                     className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
                   >
                     View Details
                   </button>
 
-                  {/* <div className="flex items-center space-x-2 bg-gray-100 rounded-lg px-3">
+                  <div className="flex items-center space-x-2 bg-gray-100 rounded-lg px-3">
                     <span className="text-sm text-gray-700">Active</span>
-                    {result?.isLoading && loadingId === vendor._id ? (
+                    {result?.isLoading && loadingId === vendor?._id ? (
                       <CircularProgress size={18} color="inherit" />
                     ) : (
                       <Switch
-                        checked={true} // Default to active since your data doesn't have status
-                        onChange={() => handleStatusChange(vendor._id)}
+                        checked={vendor?.isActive} // Default to active since your data doesn't have status
+                        onChange={() => handleStatusChange(vendor?._id, vendor?.isActive)}
                         inputProps={{ 'aria-label': 'controlled' }}
                       />
                     )}
-                  </div> */}
+                  </div>
                 </div>
               </div>
             </div>

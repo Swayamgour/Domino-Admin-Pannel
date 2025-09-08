@@ -50,6 +50,7 @@ const LoginPage = () => {
       if (result?.data?.data?.user?.role === 'customer') {
         toast.error('User Not Exits')
       } else {
+         window.location.href = '/Home';
         navigate('/Home')
       }
     }

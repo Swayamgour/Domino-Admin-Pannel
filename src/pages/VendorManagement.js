@@ -27,9 +27,9 @@ const VendorManagement = () => {
   const [hasMore, setHasMore] = useState(true)
   const loaderRef = useRef()
 
-  const { data, isFetching } = useGetAllVenderQuery()
+  const { data, isFetching, isLoading } = useGetAllVenderQuery()
 
-  console.log(data)
+  // console.log(data)
 
   useEffect(() => {
     if (data?.length) {
@@ -433,7 +433,7 @@ const VendorManagement = () => {
         {/* {console.log(data === undefined)} */}
         <div>
           <div className='overflow-x-auto'>
-            <VendorCard data={data} />
+            {isLoading ? <p> Loading...</p> : <VendorCard data={data} />}
 
             {data != undefined && data?.data?.length === 0 && (
               <div className='text-center py-12'>

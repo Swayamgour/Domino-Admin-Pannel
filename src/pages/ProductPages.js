@@ -420,7 +420,7 @@ const ProductPages = () => {
                   onChange={e => setSearchTerm(e.target.value)}
                   className='w-full p-2 md:p-3 border border-gray-300 rounded-lg md:rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500'
                 />
-                <HiOutlineSearch size={24} />
+                {/* <HiOutlineSearch size={24} /> */}
               </div>
             </div>
 
