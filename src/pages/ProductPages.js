@@ -184,49 +184,85 @@ const ProductPages = () => {
     await deleteProd(id)
   }
 
-  const handleSubmit = async e => {
-    e.preventDefault()
+  console.log(editingProduct)
 
-    const formData = new FormData()
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
 
-    // Append the required fields in the correct format
-    formData.append('name', editingProduct?.name)
-    formData.append('description', editingProduct?.description)
-    formData.append('price', editingProduct?.price)
-    formData.append('categoryId', editingProduct?.categoryId)
+  //   try {
+  //     const formData = new FormData();
+
+  //     // Always append text fields
+  //     formData.append("name", editingProduct?.name || "");
+  //     formData.append("description", editingProduct?.description || "");
+  //     formData.append("price", editingProduct?.price || 0);
+  //     formData.append("categoryId", editingProduct?.categoryId || "");
 
 
-    let body = {
-      name: editingProduct?.name,
-      description: editingProduct?.description,
-      price: editingProduct?.price,
-      categoryId: editingProduct?.categoryId
-    }
+
+  //     // Append image if available
+  //     if (editingProduct?.image instanceof File) {
+  //       formData.append("image", editingProduct.image);
+  //     }
+
+  //     if (editingProduct?._id) {
+  //       // ✅ Update product
+  //       await updateProduct({
+  //         id: editingProduct._id,
+  //         body: formData, // send FormData
+  //       }).unwrap();
+
+  //       toast.success("Product updated successfully");
+  //     } else {
+  //       // ✅ Add product
+  //       await addProduct(formData).unwrap();
+  //       toast.success("Product added successfully");
+  //     }
+
+  //     setIsFormOpen(false);
+  //     setEditingProduct(null);
+  //   } catch (error) {
+  //     toast.error("Something went wrong");
+  //     console.error(error);
+  //   }
+  // };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
     try {
-      if (editingProduct?._id) {
-        // Update existing product
-        await updateProduct({
-          id: editingProduct._id,
-          updatedData: formData
-        })
-        toast.success('Product updated successfully')
-      } else {
-        // Add new product - include image if available
-        if (editingProduct?.image) {
-          formData.append('image', editingProduct?.image)
-        }
-        await addProduct(body)
-        toast.success('Product added successfully')
+      // har case me ek hi FormData banao
+      const formData = new FormData();
+      formData.append("name", editingProduct?.name || "");
+      formData.append("description", editingProduct?.description || "");
+      formData.append("price", editingProduct?.price || 0);
+      formData.append("categoryId", editingProduct?.categoryId || "");
+      formData.append("isActive", editingProduct?.isActive ?? true);
+
+      if (editingProduct?.image instanceof File) {
+        formData.append("image", editingProduct.image);
       }
 
-      setIsFormOpen(false)
-      setEditingProduct(null)
+      if (editingProduct?._id) {
+        // update product
+        await updateProduct({ id: editingProduct._id, formData }).unwrap();
+        toast.success("Product updated successfully");
+      } else {
+        // add product
+        await addProduct(formData).unwrap();
+        toast.success("Product added successfully");
+      }
+
+      setIsFormOpen(false);
+      setEditingProduct(null);
     } catch (error) {
-      toast.error('Something went wrong')
-      console.error(error)
+      toast.error("Something went wrong");
+      console.error(error);
     }
-  }
+  };
+
+
+
 
   // Add a new category
   //   const addCategory = () => {

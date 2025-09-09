@@ -5,6 +5,7 @@ export const pokemonApi = createApi({
   reducerPath: 'pokemonApi',
   baseQuery: fetchBaseQuery({
     baseUrl: 'https://backend-dominos-admin-pannel.onrender.com/api/',
+    // baseUrl: 'http://localhost:5000/api/',
     prepareHeaders: headers => {
       const token = Cookies.get('accessToken') // or localStorage.getItem('accessToken')
       if (token) {
@@ -117,30 +118,34 @@ export const pokemonApi = createApi({
     }),
 
     addProduct: build.mutation({
-      query: body => ({
+      query: (formData) => ({
         url: 'product',
         method: 'POST',
-        body
+        body: formData,   // FormData bhejna hai
       }),
       invalidatesTags: ['product']
     }),
 
     updateProduct: build.mutation({
-      query: ({ id, updatedData }) => ({
-        url: `v1/product/updateproduct/${id}`, // adjust to your API structure
-        method: 'PUT', // or 'PATCH' if partial update
-        body: updatedData
+      query: ({ id, formData }) => ({
+        url: `product/${id}`,
+        method: 'PUT',
+        body: formData // ✅ abhi bhi FormData jaayega
       }),
       invalidatesTags: ['product']
-    }),
+    })
+    ,
 
     deleteProduct: build.mutation({
-      query: id => ({
-        url: `v1/product/deleteproduct/${id}`, // assuming ID in URL
+      query: (id) => ({
+        url: `product/${id}`,
         method: 'DELETE'
       }),
       invalidatesTags: ['product']
     }),
+
+
+
 
     getAllCategory: build.query({
       query: () => `category`,
@@ -195,5 +200,6 @@ export const {
   useGetOrderByIdQuery,
   useGetOrderByfrenchieQuery,
   useUpdateProfileImageMutation,
-  useGetFranchiseByIdQuery
+  useGetFranchiseByIdQuery,
+  // useUpdateProductMutation , 
 } = pokemonApi

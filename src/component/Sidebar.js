@@ -105,7 +105,7 @@ const Sidebar = () => {
             <NavItem to='/FrencieOrder' icon={FaClipboardList} label='Orders' />
           )}
           {/* <NavItem to='/users' icon={FaUsers} label='Users' /> */}
-          <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />
+          {franchise_admin && <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />}
           {/* <NavItem to="/reports" icon={FaChartBar} label="Reports" /> */}
           {/* <NavItem to="/settings" icon={FiSettings} label="Settings" /> */}
         </nav>

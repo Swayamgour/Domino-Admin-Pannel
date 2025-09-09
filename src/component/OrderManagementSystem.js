@@ -16,12 +16,14 @@ import {
   FaReceipt
 } from 'react-icons/fa';
 import { useGetFranchiseByIdQuery } from '../redux/api';
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Loader from './Loader';
 
 const FranchiseDashboard = () => {
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [expandedPayment, setExpandedPayment] = useState(null);
+
+  const navigate = useNavigate()
 
 
 
@@ -69,10 +71,26 @@ const FranchiseDashboard = () => {
       {isLoading ? <p className='w-100 h-full flex justify-center items-center'>Loading...</p> : <div className="min-h-screen bg-gray-50 p-4 md:p-6">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-800">Franchise Dashboard</h1>
-            <p className="text-gray-600">Manage your franchise operations</p>
+          <div className="flex justify-between items-center mb-8">
+            {/* Left Section */}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800">Franchise Dashboard</h1>
+              <p className="text-gray-600 mt-1">Manage your franchise operations</p>
+            </div>
+
+            {/* Right Section - Payout Card */}
+            <div className="  rounded-lg p-4 w-64 text-center">
+              <button
+                onClick={() => navigate('/payment')}
+                // disabled={vendor.payoutAmount <= 0}
+                className={`px-3 py-1 rounded-md   bg-indigo-100 text-indigo-700 hover:bg-indigo-200 F`}
+              >
+                Process Payout
+              </button>
+            </div>
           </div>
+
+
 
           {/* Franchise Information Card */}
           <div className="bg-white rounded-xl shadow-md p-6 mb-8">

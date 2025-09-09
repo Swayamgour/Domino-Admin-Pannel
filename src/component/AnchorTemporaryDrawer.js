@@ -18,7 +18,7 @@ import {
 import { IoExitOutline } from 'react-icons/io5'
 import { useGetCurrentUserQuery, useLogoutMutation } from '../redux/api'
 
-export default function AnchorTemporaryDrawer () {
+export default function AnchorTemporaryDrawer() {
   const [open, setOpen] = React.useState(false)
 
   const navigate = useNavigate()
@@ -40,17 +40,16 @@ export default function AnchorTemporaryDrawer () {
     await logout()
   }
 
-    let franchise_admin = CurrentUser?.user?.role === 'franchise_admin'
+  let franchise_admin = CurrentUser?.user?.role === 'franchise_admin'
 
 
   const NavItem = ({ to, icon: Icon, label }) => (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
-          isActive
-            ? 'bg-gradient-to-r from-purple-600 to-indigo-700 shadow-lg shadow-indigo-500/20 text-white'
-            : 'hover:bg-gray-700 text-gray-300'
+        `flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${isActive
+          ? 'bg-gradient-to-r from-purple-600 to-indigo-700 shadow-lg shadow-indigo-500/20 text-white'
+          : 'hover:bg-gray-700 text-gray-300'
         }`
       }
     >
@@ -107,7 +106,9 @@ export default function AnchorTemporaryDrawer () {
             label='Orders'
           />
           {/* <NavItem to='/users' icon={FaUsers} label='Users' /> */}
-          <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />
+          {/* <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' /> */}
+          {franchise_admin && <NavItem to='/payment' icon={FaMoneyCheckAlt} label='Payments' />}
+
           {/* <NavItem to="/reports" icon={FaChartBar} label="Reports" /> */}
           {/* <NavItem to="/settings" icon={FiSettings} label="Settings" /> */}
         </nav>
